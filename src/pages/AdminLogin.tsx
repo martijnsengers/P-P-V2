@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -18,28 +18,32 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First check if the email exists in admins table
+      // First hash the provided password
+      const { data: hashedPassword } = await supabase.rpc('hash_password', {
+        password
+      });
+
+      // Then check if there's a matching admin
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select()
         .eq('email', email)
+        .eq('password_hash', hashedPassword)
         .maybeSingle();
 
       if (adminError) {
-        throw new Error('Error checking admin access');
+        throw new Error('Error checking admin credentials');
       }
 
       if (!adminData) {
-        throw new Error('Unauthorized access. Only admins can login here.');
+        throw new Error('Invalid email or password');
       }
 
-      // If admin exists, attempt to sign in
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      // Store admin session in localStorage
+      localStorage.setItem('adminSession', JSON.stringify({ 
+        email: adminData.email,
+        id: adminData.id
+      }));
 
       toast({
         title: "Login successful",

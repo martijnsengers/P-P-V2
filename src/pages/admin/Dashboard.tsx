@@ -17,17 +17,19 @@ export default function AdminDashboard() {
 
   const checkAdmin = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const adminSession = localStorage.getItem('adminSession');
       
-      if (!user) {
+      if (!adminSession) {
         navigate('/admin/login');
         return;
       }
 
+      const { email } = JSON.parse(adminSession);
+
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select()
-        .eq('email', user.email)
+        .eq('email', email)
         .single();
 
       if (adminError || !adminData) {
@@ -47,8 +49,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem('adminSession');
     navigate('/admin/login');
   };
 

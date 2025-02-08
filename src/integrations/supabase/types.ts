@@ -14,16 +14,19 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          password_hash: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          password_hash: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          password_hash?: string
         }
         Relationships: []
       }
@@ -145,7 +148,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      hash_password: {
+        Args: {
+          password: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

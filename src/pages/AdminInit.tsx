@@ -18,33 +18,16 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // First check if the email exists in admins table
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', email)
-        .maybeSingle();
+      // Insert new admin with hashed password
+      const { data, error } = await supabase.rpc('hash_password', {
+        password
+      }).then(({ data: hashedPassword }) => 
+        supabase
+          .from('admins')
+          .insert([{ email, password_hash: hashedPassword }])
+      );
 
-      if (adminError) {
-        throw new Error('Error checking admin access');
-      }
-
-      if (!adminData) {
-        throw new Error('This email is not authorized for admin access');
-      }
-
-      // Try to create the auth user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            is_admin: true
-          }
-        }
-      });
-
-      if (signUpError) throw signUpError;
+      if (error) throw error;
 
       toast({
         title: "Success",
