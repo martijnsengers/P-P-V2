@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Leaf, Upload } from "lucide-react";
+import { Leaf } from "lucide-react";
 
 const Index = () => {
   const [accessCode, setAccessCode] = useState("");
@@ -27,7 +27,7 @@ const Index = () => {
     // For now, we'll just accept any non-empty code
     toast({
       title: "Success",
-      description: "Welcome to Flora Future Generator",
+      description: "Welcome to Planten en Planeten Image Generator",
     });
     
     // Redirect to upload page
@@ -49,21 +49,21 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#2D3F2D]">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <Leaf className="h-12 w-12 text-primary" />
+            <Leaf className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-extrabold text-primary">
-            Flora Future Generator
+          <h1 className="text-4xl font-extrabold text-white">
+            Planten en Planeten Image Generator
           </h1>
-          <p className="text-base text-muted-foreground">
+          <p className="text-base text-gray-300">
             Create and explore futuristic plant organisms
           </p>
         </div>
 
-        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl rounded-xl">
+        <Card className="p-6 bg-white/90 backdrop-blur-sm shadow-xl rounded-xl">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label
@@ -84,10 +84,9 @@ const Index = () => {
 
             <Button
               type="submit"
-              className="w-full button-hover bg-primary text-primary-foreground"
+              className="w-full bg-[#2D3F2D] hover:bg-[#3D4F3D] text-white"
             >
               Enter Workshop
-              <Upload className="ml-2 h-4 w-4" />
             </Button>
           </form>
         </Card>

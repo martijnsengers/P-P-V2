@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import heic2any from "heic2any";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,20 +69,20 @@ export default function UploadPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-[#2D3F2D] p-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/admin/gallery")}
-          >
-            Terug naar Gallery
-          </Button>
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-4">
+            <Leaf className="h-12 w-12 text-white" />
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-2">
+            Planten en Planeten Image Generator
+          </h1>
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Upload je foto</h1>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold text-white mb-2">Upload je foto</h2>
+          <p className="text-gray-300">
             Ondersteunde formaten: JPG, PNG, HEIC
           </p>
         </div>
