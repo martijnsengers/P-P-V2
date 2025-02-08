@@ -19,14 +19,16 @@ export default function AdminLogin() {
 
     try {
       // First hash the provided password
-      const { data: hashedPassword } = await supabase.rpc('hash_password', {
+      const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password', {
         password
       });
+
+      if (hashError) throw hashError;
 
       // Then check if there's a matching admin
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select()
+        .select('email, id')
         .eq('email', email)
         .eq('password_hash', hashedPassword)
         .maybeSingle();
@@ -52,6 +54,7 @@ export default function AdminLogin() {
 
       navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Error",
         description: error.message,
