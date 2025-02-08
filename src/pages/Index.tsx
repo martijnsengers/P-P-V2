@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Leaf } from "lucide-react";
+import { Header } from "@/components/Header";
 
 const Index = () => {
   const [accessCode, setAccessCode] = useState("");
@@ -51,17 +51,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <Leaf className="h-12 w-12 text-primary" />
-          </div>
-          <h1 className="text-4xl font-extrabold text-primary">
-            Planten en Planeten Image Generator
-          </h1>
-          <p className="text-base text-muted-foreground">
-            Create and explore futuristic plant organisms
-          </p>
-        </div>
+        <Header subtitle="Create and explore futuristic plant organisms" />
 
         <Card className="p-6 bg-white/90 backdrop-blur-sm shadow-xl rounded-xl">
           <form onSubmit={handleLogin} className="space-y-6">
