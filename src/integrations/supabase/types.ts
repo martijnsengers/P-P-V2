@@ -14,19 +14,16 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          password_hash: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
-          password_hash: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
-          password_hash?: string
         }
         Relationships: []
       }

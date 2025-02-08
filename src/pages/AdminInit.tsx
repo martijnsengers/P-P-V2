@@ -29,9 +29,7 @@ export default function AdminInit() {
       // Then create the admin record
       const { error: insertError } = await supabase
         .from('admins')
-        .insert([{ 
-          email,
-        }]);
+        .insert({ email });
 
       if (insertError) throw insertError;
 
