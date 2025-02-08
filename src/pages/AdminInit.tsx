@@ -1,48 +1,42 @@
 
 import { useState } from "react";
-import { Navigate, useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export default function AdminLogin() {
-  const [email, setEmail] = useState("");
+export default function AdminInit() {
+  const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+      // Create the auth user
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+      if (!user) throw new Error("Failed to create user");
 
-      // Check if the user is an admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', email)
-        .single();
-
-      if (adminError || !adminData) {
-        await supabase.auth.signOut();
-        throw new Error('Unauthorized access. Only admins can login here.');
-      }
+      // The admin entry was already created in the migration,
+      // so we can now sign out and redirect to login
+      await supabase.auth.signOut();
 
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: "Admin setup complete",
+        description: "You can now log in with your credentials.",
       });
 
-      navigate('/admin/dashboard');
+      navigate('/admin/login');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -59,10 +53,13 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Admin Login
+            Initial Admin Setup
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Set up your admin account password
+          </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <form className="mt-8 space-y-6" onSubmit={handleSetup}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <Input
@@ -71,15 +68,17 @@ export default function AdminLogin() {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                readOnly
               />
             </div>
             <div>
               <Input
                 type="password"
                 required
-                placeholder="Password"
+                placeholder="Set your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
               />
             </div>
           </div>
@@ -90,20 +89,12 @@ export default function AdminLogin() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Setting up..." : "Complete Setup"}
             </Button>
           </div>
         </form>
-        
-        <div className="text-center mt-4">
-          <Link 
-            to="/admin/init" 
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            First time setup? Click here
-          </Link>
-        </div>
       </div>
     </div>
+  </div>
   );
 }
