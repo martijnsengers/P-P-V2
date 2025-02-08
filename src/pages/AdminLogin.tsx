@@ -18,19 +18,19 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First hash the provided password
-      const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password', {
+      // First try to sign in with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
         password
       });
 
-      if (hashError) throw hashError;
+      if (authError) throw authError;
 
-      // Then check if there's a matching admin
+      // Then check if the user is an admin
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select('email, id')
         .eq('email', email)
-        .eq('password_hash', hashedPassword)
         .maybeSingle();
 
       if (adminError) {
@@ -38,10 +38,12 @@ export default function AdminLogin() {
       }
 
       if (!adminData) {
-        throw new Error('Invalid email or password');
+        // If the user exists but is not an admin, sign them out
+        await supabase.auth.signOut();
+        throw new Error('User is not authorized as admin');
       }
 
-      // Store admin session in localStorage
+      // Store admin session
       localStorage.setItem('adminSession', JSON.stringify({ 
         email: adminData.email,
         id: adminData.id

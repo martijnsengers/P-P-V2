@@ -18,19 +18,19 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // First get the hashed password
-      const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password', {
-        password
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
       });
 
-      if (hashError) throw hashError;
+      if (authError) throw authError;
 
-      // Then create the admin user
+      // Then create the admin record
       const { error: insertError } = await supabase
         .from('admins')
         .insert([{ 
-          email, 
-          password_hash: hashedPassword 
+          email,
         }]);
 
       if (insertError) throw insertError;
