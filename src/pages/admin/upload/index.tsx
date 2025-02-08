@@ -29,12 +29,15 @@ export default function UploadPage() {
           description: "Je HEIC foto wordt omgezet naar JPEG...",
         });
 
-        const blob = await heic2any({
+        const converted = await heic2any({
           blob: file,
           toType: "image/jpeg",
           quality: 0.8,
-        });
-        processedFile = new File([blob as Blob], `${file.name}.jpg`, {
+        }) as Blob[];
+
+        // heic2any can return an array of blobs for multi-page HEIC files
+        // we'll take the first one since we only need one image
+        processedFile = new File([converted[0]], `${file.name.split('.')[0]}.jpg`, {
           type: "image/jpeg",
         });
       }
@@ -42,7 +45,10 @@ export default function UploadPage() {
       // Upload to Supabase storage
       const { data, error } = await supabase.storage
         .from("original_images")
-        .upload(`${crypto.randomUUID()}.jpg`, processedFile);
+        .upload(`${crypto.randomUUID()}.jpg`, processedFile, {
+          contentType: "image/jpeg",
+          upsert: false
+        });
 
       if (error) throw error;
 
