@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ export default function AdminLogin() {
       // First check if the user exists and email is verified
       const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
       
-      const userExists = users?.find(user => user.email === email);
+      const userExists = users?.find((user: User) => user.email === email);
       
       if (!userExists) {
         throw new Error('No admin account found with this email');
