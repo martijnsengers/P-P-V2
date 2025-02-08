@@ -23,7 +23,7 @@ export default function AdminInit() {
         email,
         password,
         options: {
-          emailRedirect: window.location.origin + '/admin/login',
+          emailRedirectTo: window.location.origin + '/admin/login',
         }
       });
 
