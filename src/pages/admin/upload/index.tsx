@@ -69,20 +69,20 @@ export default function UploadPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#2D3F2D] p-8">
+    <div className="min-h-screen bg-[#E1E6E0] p-8">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-4">
-            <Leaf className="h-12 w-12 text-white" />
+            <Leaf className="h-12 w-12 text-primary" />
           </div>
-          <h1 className="text-4xl font-extrabold text-white mb-2">
+          <h1 className="text-4xl font-extrabold text-primary mb-2">
             Planten en Planeten Image Generator
           </h1>
         </div>
 
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Upload je foto</h2>
-          <p className="text-gray-300">
+          <h2 className="text-2xl font-bold text-primary mb-2">Upload je foto</h2>
+          <p className="text-primary/70">
             Ondersteunde formaten: JPG, PNG, HEIC
           </p>
         </div>

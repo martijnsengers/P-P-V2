@@ -49,16 +49,16 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#2D3F2D]">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <Leaf className="h-12 w-12 text-white" />
+            <Leaf className="h-12 w-12 text-primary" />
           </div>
-          <h1 className="text-4xl font-extrabold text-white">
+          <h1 className="text-4xl font-extrabold text-primary">
             Planten en Planeten Image Generator
           </h1>
-          <p className="text-base text-gray-300">
+          <p className="text-base text-muted-foreground">
             Create and explore futuristic plant organisms
           </p>
         </div>
@@ -84,7 +84,7 @@ const Index = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2D3F2D] hover:bg-[#3D4F3D] text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-white"
             >
               Enter Workshop
             </Button>
