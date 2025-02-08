@@ -18,16 +18,22 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // Insert new admin with hashed password
-      const { data, error } = await supabase.rpc('hash_password', {
+      // First get the hashed password
+      const { data: hashedPassword, error: hashError } = await supabase.rpc('hash_password', {
         password
-      }).then(({ data: hashedPassword }) => 
-        supabase
-          .from('admins')
-          .insert([{ email, password_hash: hashedPassword }])
-      );
+      });
 
-      if (error) throw error;
+      if (hashError) throw hashError;
+
+      // Then create the admin user
+      const { error: insertError } = await supabase
+        .from('admins')
+        .insert([{ 
+          email, 
+          password_hash: hashedPassword 
+        }]);
+
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
@@ -36,6 +42,7 @@ export default function AdminInit() {
 
       navigate('/admin/login');
     } catch (error: any) {
+      console.error('Admin creation error:', error);
       toast({
         title: "Error",
         description: error.message,
