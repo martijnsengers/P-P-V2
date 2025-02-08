@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,10 +30,27 @@ export default function WorkshopsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/admin/login");
+        return;
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   // Fetch workshops
   const { data: workshops, isLoading } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const { data, error } = await supabase
         .from("workshops")
         .select("*")
@@ -47,6 +64,11 @@ export default function WorkshopsPage() {
   // Create workshop
   const createWorkshop = useMutation({
     mutationFn: async (title: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const { data, error } = await supabase
         .from("workshops")
@@ -71,12 +93,20 @@ export default function WorkshopsPage() {
         description: error.message,
         variant: "destructive",
       });
+      if (error.message.includes("Not authenticated")) {
+        navigate("/admin/login");
+      }
     },
   });
 
   // Toggle workshop status
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const { error } = await supabase
         .from("workshops")
         .update({ status })
@@ -97,12 +127,20 @@ export default function WorkshopsPage() {
         description: error.message,
         variant: "destructive",
       });
+      if (error.message.includes("Not authenticated")) {
+        navigate("/admin/login");
+      }
     },
   });
 
   // Delete workshop
   const deleteWorkshop = useMutation({
     mutationFn: async (id: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const { error } = await supabase
         .from("workshops")
         .delete()
@@ -123,6 +161,9 @@ export default function WorkshopsPage() {
         description: error.message,
         variant: "destructive",
       });
+      if (error.message.includes("Not authenticated")) {
+        navigate("/admin/login");
+      }
     },
   });
 
