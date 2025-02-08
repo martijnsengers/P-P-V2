@@ -1,11 +1,10 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -19,49 +18,24 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First check if the user exists and email is verified
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
-      
-      const userExists = users?.find((user: User) => user.email === email);
-      
-      if (!userExists) {
-        throw new Error('No admin account found with this email');
-      }
-
-      if (!userExists.email_confirmed_at) {
-        throw new Error('Please check your email and verify your account before logging in');
-      }
-
-      // Then try to sign in
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
 
-      // Then check if the user is an admin
+      // Check if the user is an admin
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select('email, id')
+        .select()
         .eq('email', email)
-        .maybeSingle();
+        .single();
 
-      if (adminError) {
-        throw new Error('Error checking admin credentials');
-      }
-
-      if (!adminData) {
-        // If the user exists but is not an admin, sign them out
+      if (adminError || !adminData) {
         await supabase.auth.signOut();
-        throw new Error('User is not authorized as admin');
+        throw new Error('Unauthorized access. Only admins can login here.');
       }
-
-      // Store admin session
-      localStorage.setItem('adminSession', JSON.stringify({ 
-        email: adminData.email,
-        id: adminData.id
-      }));
 
       toast({
         title: "Login successful",
@@ -70,10 +44,9 @@ export default function AdminLogin() {
 
       navigate('/admin/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
       toast({
         title: "Error",
-        description: error.message || 'Invalid login credentials',
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -86,11 +59,8 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Admin Portal
+            Admin Login
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Please sign in with your admin credentials
-          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm space-y-4">
@@ -114,13 +84,15 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

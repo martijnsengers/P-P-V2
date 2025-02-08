@@ -145,12 +145,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      hash_password: {
-        Args: {
-          password: string
-        }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
