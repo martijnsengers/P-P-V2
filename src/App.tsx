@@ -11,6 +11,7 @@ import AdminInit from "./pages/AdminInit";
 import AdminDashboard from "./pages/admin/Dashboard";
 import WorkshopsPage from "./pages/admin/workshops";
 import GalleryPage from "./pages/admin/gallery";
+import UploadPage from "./pages/admin/upload";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/workshops" element={<WorkshopsPage />} />
           <Route path="/admin/gallery" element={<GalleryPage />} />
+          <Route path="/admin/upload" element={<UploadPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
