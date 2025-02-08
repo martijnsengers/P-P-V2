@@ -13,7 +13,7 @@ export default function AdminLogin() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -26,55 +26,16 @@ export default function AdminLogin() {
         .single();
 
       if (adminError || !adminData) {
-        throw new Error('Unauthorized. Only pre-registered admins can sign up.');
+        throw new Error('Unauthorized access. Only admins can login here.');
       }
 
-      // If admin exists, create the auth user
-      const { data: { user }, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sign up successful",
-        description: "Please check your email to verify your account, then you can log in.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
+      // If admin exists, attempt to sign in
       const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-
-      // Check if the user is an admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', email)
-        .single();
-
-      if (adminError || !adminData) {
-        await supabase.auth.signOut();
-        throw new Error('Unauthorized access. Only admins can login here.');
-      }
 
       toast({
         title: "Login successful",
@@ -101,10 +62,10 @@ export default function AdminLogin() {
             Admin Portal
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Please sign up first if you haven't created your account yet.
+            Please sign in with your admin credentials
           </p>
         </div>
-        <form className="mt-8 space-y-6">
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <Input
@@ -126,32 +87,13 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <div className="flex flex-col space-y-4">
-            <Button
-              type="button"
-              className="w-full"
-              disabled={loading}
-              onClick={handleSignUp}
-            >
-              {loading ? "Processing..." : "Sign Up"}
-            </Button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={handleLogin}
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </Button>
         </form>
       </div>
     </div>
