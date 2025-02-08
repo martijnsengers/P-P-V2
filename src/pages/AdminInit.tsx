@@ -18,10 +18,13 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // First create the auth user
+      // First create the auth user with email confirmation
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirect: window.location.origin + '/admin/login',
+        }
       });
 
       if (authError) throw authError;
@@ -34,16 +37,20 @@ export default function AdminInit() {
       if (insertError) throw insertError;
 
       toast({
-        title: "Success",
-        description: "Admin user created successfully. Please log in.",
+        title: "Admin Account Created",
+        description: "Please check your email to verify your account before logging in.",
       });
 
       navigate('/admin/login');
     } catch (error: any) {
       console.error('Admin creation error:', error);
+      const errorMessage = error.message === 'User already registered'
+        ? 'This email is already registered. Please try logging in instead.'
+        : error.message;
+        
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

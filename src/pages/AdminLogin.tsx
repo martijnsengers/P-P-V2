@@ -24,7 +24,13 @@ export default function AdminLogin() {
         password
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        // Handle specific auth errors
+        if (authError.message.includes('Email not confirmed')) {
+          throw new Error('Please verify your email address before logging in.');
+        }
+        throw authError;
+      }
 
       // Then check if the user is an admin
       const { data: adminData, error: adminError } = await supabase
