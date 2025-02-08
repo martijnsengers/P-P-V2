@@ -18,19 +18,26 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First try to sign in with Supabase Auth
+      // First check if the user exists and email is verified
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
+      
+      const userExists = users?.find(user => user.email === email);
+      
+      if (!userExists) {
+        throw new Error('No admin account found with this email');
+      }
+
+      if (!userExists.email_confirmed_at) {
+        throw new Error('Please check your email and verify your account before logging in');
+      }
+
+      // Then try to sign in
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (authError) {
-        // Handle specific auth errors
-        if (authError.message.includes('Email not confirmed')) {
-          throw new Error('Please verify your email address before logging in.');
-        }
-        throw authError;
-      }
+      if (authError) throw authError;
 
       // Then check if the user is an admin
       const { data: adminData, error: adminError } = await supabase
@@ -65,7 +72,7 @@ export default function AdminLogin() {
       console.error('Login error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || 'Invalid login credentials',
         variant: "destructive",
       });
     } finally {
