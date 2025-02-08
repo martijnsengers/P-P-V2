@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Leaf, Upload } from "lucide-react";
 const Index = () => {
   const [accessCode, setAccessCode] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,11 +22,16 @@ const Index = () => {
       });
       return;
     }
-    // Here we'll implement the access code validation
+    
+    // Here we'll later implement proper access code validation
+    // For now, we'll just accept any non-empty code
     toast({
       title: "Success",
       description: "Welcome to Flora Future Generator",
     });
+    
+    // Redirect to upload page
+    navigate("/admin/upload");
   };
 
   useEffect(() => {
