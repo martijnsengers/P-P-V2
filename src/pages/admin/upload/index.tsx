@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import heic2any from "heic2any";
 import { ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 
@@ -24,6 +24,11 @@ export default function UploadPage() {
       // Convert HEIC to JPEG if needed
       let processedFile = file;
       if (file.type === "image/heic" || file.type === "image/heif") {
+        toast({
+          title: "Converting image",
+          description: "Je HEIC foto wordt omgezet naar JPEG...",
+        });
+
         const blob = await heic2any({
           blob: file,
           toType: "image/jpeg",
@@ -40,6 +45,11 @@ export default function UploadPage() {
         .upload(`${crypto.randomUUID()}.jpg`, processedFile);
 
       if (error) throw error;
+
+      toast({
+        title: "Upload succesvol",
+        description: "Je foto is succesvol geüpload.",
+      });
 
       // Navigate to next page after successful upload
       navigate("/admin/questions", { 
