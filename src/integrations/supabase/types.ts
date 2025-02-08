@@ -32,27 +32,41 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          generated_image_url: string | null
           id: string
           image_url: string
           title: string
+          workshop_id: string | null
         }
         Insert: {
           created_at?: string
           created_by: string
           description?: string | null
+          generated_image_url?: string | null
           id?: string
           image_url: string
           title: string
+          workshop_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string
           description?: string | null
+          generated_image_url?: string | null
           id?: string
           image_url?: string
           title?: string
+          workshop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gallery_items_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submissions: {
         Row: {
