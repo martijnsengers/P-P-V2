@@ -29,6 +29,12 @@ export function UploadForm() {
 
     setUploading(true);
     try {
+      // First get the current user
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        throw new Error("Authentication required");
+      }
+
       const fileExt = file.name.split(".").pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -44,13 +50,14 @@ export function UploadForm() {
         .from("gallery")
         .getPublicUrl(filePath);
 
-      // Create gallery item
+      // Create gallery item with user ID
       const { error: insertError } = await supabase
         .from("gallery_items")
         .insert({
           title,
           description,
           image_url: publicUrl,
+          created_by: session.user.id, // Add the user ID here
         });
 
       if (insertError) throw insertError;
@@ -70,7 +77,7 @@ export function UploadForm() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to upload image",
+        description: error.message || "Failed to upload image",
         variant: "destructive",
       });
     } finally {
