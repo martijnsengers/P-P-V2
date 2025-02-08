@@ -23,9 +23,13 @@ export default function AdminLogin() {
         .from('admins')
         .select()
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
-      if (adminError || !adminData) {
+      if (adminError) {
+        throw new Error('Error checking admin access');
+      }
+
+      if (!adminData) {
         throw new Error('Unauthorized access. Only admins can login here.');
       }
 
