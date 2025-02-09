@@ -64,30 +64,40 @@ export default function UploadPage() {
       const filename = `${crypto.randomUUID()}.${processedFile.type === "image/jpeg" ? "jpg" : "png"}`;
 
       // Upload to Supabase with explicit content type
-      const { data, error } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from("original_uploads")
         .upload(filename, processedFile, {
           contentType: processedFile.type,
           upsert: false
         });
 
-      if (error) throw error;
+      if (uploadError) throw uploadError;
 
-      // Update the submission with the image URL
+      // Get the public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from("original_uploads")
+        .getPublicUrl(filename);
+
+      console.log("Public URL:", publicUrl); // Debug log
+
+      // Update the submission with the public image URL
       const { error: updateError } = await supabase
         .from("submissions")
-        .update({ url_original_image: data.path })
+        .update({ url_original_image: publicUrl })
         .eq("user_id", session.userId)
         .eq("workshop_id", session.workshopId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Update error:", updateError); // Debug log
+        throw updateError;
+      }
 
       toast({
         title: "Upload succesvol",
         description: "Je foto is succesvol geüpload.",
       });
 
-      // Navigate to next page with the image URL
+      // Navigate to next page
       navigate("/questions");
 
     } catch (error) {
