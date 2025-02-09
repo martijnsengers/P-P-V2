@@ -62,7 +62,7 @@ export default function QuestionsPage() {
         throw new Error("Kon de originele afbeelding niet ophalen");
       }
 
-      // Send data to Make.com webhook
+      // Send data to webhook
       const webhookData = {
         type_organisme: data.type_organisme,
         kleur_organisme: data.kleur_organisme,
@@ -71,9 +71,10 @@ export default function QuestionsPage() {
         kenmerken_user: data.kenmerken_user,
         user_id: session.userId,
         url_original_image: submission.url_original_image,
+        image_id: session.submissionId, // Added image_id to the webhook data
       };
 
-      const webhookResponse = await fetch('https://hook.eu2.make.com/cn0yf1jvv8uuvo7nh2f89j26qpi8km71', {
+      const webhookResponse = await fetch('https://hkdk.events/1adn4uq1w3ber2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
