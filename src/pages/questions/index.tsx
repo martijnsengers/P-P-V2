@@ -75,7 +75,9 @@ export default function QuestionsPage() {
   });
 
   async function onSubmit(data: FormType) {
+    // Validate required state
     if (!userId || !workshopId || !imageUrl) {
+      console.error("Missing required state:", { userId, workshopId, imageUrl });
       toast({
         title: "Error",
         description: "Missende gegevens. Ga terug naar de vorige pagina.",
@@ -85,8 +87,27 @@ export default function QuestionsPage() {
     }
 
     setIsLoading(true);
+    console.log("Submitting form with data:", { userId, workshopId, ...data });
 
     try {
+      // First verify the submission exists
+      const { data: existingSubmission, error: fetchError } = await supabase
+        .from("submissions")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("workshop_id", workshopId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("Error fetching submission:", fetchError);
+        throw new Error("Kon de inzending niet vinden");
+      }
+
+      if (!existingSubmission) {
+        console.error("No submission found for:", { userId, workshopId });
+        throw new Error("Geen inzending gevonden. Start opnieuw.");
+      }
+
       // Update Supabase submissions
       const { error: updateError } = await supabase
         .from("submissions")
@@ -102,8 +123,11 @@ export default function QuestionsPage() {
         .eq("workshop_id", workshopId);
 
       if (updateError) {
-        throw updateError;
+        console.error("Error updating submission:", updateError);
+        throw new Error("Kon de inzending niet bijwerken");
       }
+
+      console.log("Successfully updated submission");
 
       // TODO: Send to Make.com webhook
       // We'll need the webhook URL to be provided
@@ -113,10 +137,10 @@ export default function QuestionsPage() {
         state: { userId, workshopId },
       });
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Form submission error:", error);
       toast({
         title: "Error",
-        description: "Er is iets misgegaan. Probeer het opnieuw.",
+        description: error instanceof Error ? error.message : "Er is iets misgegaan. Probeer het opnieuw.",
         variant: "destructive",
       });
     } finally {
@@ -293,3 +317,4 @@ export default function QuestionsPage() {
     </div>
   );
 }
+
