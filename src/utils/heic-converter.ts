@@ -1,73 +1,82 @@
 
 import heic2any from "heic2any";
 
-interface ConversionOptions {
-  quality?: number;
-  preserveOriginalName?: boolean;
-  maxDimensions?: { width: number; height: number };
-}
-
-export async function convertHeicToJpeg(
-  file: File,
-  options: ConversionOptions = {}
-): Promise<File> {
-  const {
-    quality = 0.8,
-    preserveOriginalName = true,
-    maxDimensions
-  } = options;
-
-  // Validate input file
+export async function convertHeicToJpeg(file: File): Promise<File> {
+  // Basic validation
   if (!file) {
     throw new Error("No file provided");
   }
 
-  // Check if file is HEIC/HEIF
-  const isHeic = 
-    file.type.toLowerCase().includes("heic") || 
-    file.name.toLowerCase().endsWith(".heic") ||
-    file.name.toLowerCase().endsWith(".heif");
-
-  if (!isHeic) {
-    return file; // Return original if not HEIC/HEIF
-  }
+  // Log attempt details for debugging
+  console.log("Starting HEIC conversion:", {
+    name: file.name,
+    size: file.size,
+    type: file.type
+  });
 
   try {
-    // Convert HEIC to JPEG
+    // Try with minimal options first
     const convertedBlob = await heic2any({
       blob: file,
       toType: "image/jpeg",
-      quality,
-      ...(maxDimensions && {
-        max: {
-          width: maxDimensions.width,
-          height: maxDimensions.height
-        }
-      })
+      quality: 0.7,  // Lower quality for better compatibility
     });
 
     if (!convertedBlob) {
-      throw new Error("Conversion failed - no blob returned");
+      throw new Error("Conversion returned null result");
     }
 
-    // Handle array or single blob result
+    // Handle potential array result
     const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
 
-    // Generate new filename
-    const originalName = file.name;
-    const newFilename = preserveOriginalName
-      ? originalName.replace(/\.(heic|heif)$/i, ".jpg")
-      : `converted_${Date.now()}.jpg`;
+    // Create new filename
+    const newFilename = file.name.replace(/\.(heic|heif)$/i, ".jpg");
 
-    // Create new File object
-    const convertedFile = new File([finalBlob], newFilename, {
-      type: "image/jpeg",
-      lastModified: new Date().getTime()
+    // Create new File with minimal metadata
+    return new File([finalBlob], newFilename, {
+      type: "image/jpeg"
     });
 
-    return convertedFile;
   } catch (error) {
-    console.error("HEIC conversion error:", error);
-    throw new Error(`Failed to convert HEIC to JPEG: ${error.message}`);
+    // Log detailed error for debugging
+    console.error("HEIC conversion detailed error:", {
+      errorMessage: error.message,
+      errorCode: error.code,
+      errorName: error.name,
+      file: {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      }
+    });
+
+    throw error; // Re-throw to handle in calling code
   }
+}
+
+export async function uploadHeicWithRetry(file: File, maxRetries = 2): Promise<File> {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`Retry attempt ${attempt} of ${maxRetries}`);
+        // Add small delay between retries
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      return await convertHeicToJpeg(file);
+    } catch (error) {
+      console.warn(`Attempt ${attempt + 1} failed:`, error);
+      lastError = error;
+      
+      // If it's not the last attempt, continue to next retry
+      if (attempt < maxRetries) {
+        continue;
+      }
+    }
+  }
+
+  // If we get here, all attempts failed
+  throw new Error(`HEIC conversion failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
 }

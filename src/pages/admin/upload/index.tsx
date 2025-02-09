@@ -6,7 +6,7 @@ import { ImagePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
-import { convertHeicToJpeg } from "@/utils/heic-converter";
+import { uploadHeicWithRetry } from "@/utils/heic-converter";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -20,12 +20,8 @@ export default function UploadPage() {
     const file = acceptedFiles[0];
 
     try {
-      // Convert file if it's HEIC/HEIF
-      const processedFile = await convertHeicToJpeg(file, {
-        quality: 0.8,
-        maxDimensions: { width: 1920, height: 1080 },
-        preserveOriginalName: true
-      });
+      // Convert file with retry mechanism if it's HEIC/HEIF
+      const processedFile = await uploadHeicWithRetry(file);
 
       // Generate a unique filename for storage
       const filename = `${crypto.randomUUID()}.${processedFile.type === "image/jpeg" ? "jpg" : "png"}`;
