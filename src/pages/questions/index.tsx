@@ -29,10 +29,10 @@ export default function QuestionsPage() {
     }
 
     setIsLoading(true);
-    console.log("Submitting form with data:", { ...session, ...data });
+    console.log("Submitting form with data:", { submissionId: session.submissionId, ...data });
 
     try {
-      // Update Supabase submissions using the session data
+      // Update Supabase submissions using just the form data and submissionId
       const { error: updateError } = await supabase
         .from("submissions")
         .update({
@@ -42,11 +42,8 @@ export default function QuestionsPage() {
           hoeveel_organism: data.hoeveel_organism,
           beschrijving_landschap_user: data.beschrijving_landschap_user,
           kenmerken_user: data.kenmerken_user,
-          user_id: session.userId, // Include user_id from session
-          workshop_id: session.workshopId // Include workshop_id from session
         })
-        .eq('id', session.submissionId)
-        .eq('user_id', session.userId); // Add this condition to match RLS
+        .eq('id', session.submissionId);
 
       if (updateError) {
         console.error("Error updating submission:", updateError);
