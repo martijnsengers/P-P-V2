@@ -146,7 +146,40 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "submissions_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          workshop_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          workshop_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          workshop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_workshop_id_fkey"
             columns: ["workshop_id"]
             isOneToOne: false
             referencedRelation: "workshops"
