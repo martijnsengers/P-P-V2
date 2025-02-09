@@ -154,8 +154,10 @@ export default function QuestionsPage() {
 
       console.log("Successfully updated submission");
 
-      // TODO: Send to Make.com webhook
-      // We'll need the webhook URL to be provided
+      toast({
+        title: "Succes",
+        description: "Je antwoorden zijn succesvol opgeslagen.",
+      });
 
       // Navigate to loading page
       navigate("/loading-questions");
