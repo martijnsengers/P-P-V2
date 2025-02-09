@@ -22,7 +22,8 @@ const Index = () => {
     try {
       // Clear any existing session data
       localStorage.removeItem('workshopSession');
-
+      
+      console.log("Looking up workshop with access code:", accessCode.trim());
       // Validate access code against workshops table
       const { data: workshop, error: workshopError } = await supabase
         .from("workshops")
@@ -31,47 +32,54 @@ const Index = () => {
         .single();
 
       if (workshopError) {
-        console.error("Workshop error:", workshopError);
+        console.error("Workshop lookup error:", workshopError);
         toast({
           title: "Error",
           description: "Ongeldige toegangscode. Probeer het opnieuw.",
           variant: "destructive",
         });
+        stopLoading();
         return;
       }
 
       if (!workshop) {
+        console.log("No workshop found for access code:", accessCode.trim());
         toast({
           title: "Error",
           description: "Workshop niet gevonden.",
           variant: "destructive",
         });
+        stopLoading();
         return;
       }
 
       if (!workshop.status) {
+        console.log("Workshop found but inactive:", workshop.id);
         toast({
           title: "Workshop niet actief",
           description: "Deze workshop is niet meer actief.",
           variant: "destructive",
         });
+        stopLoading();
         return;
       }
 
+      console.log("Creating new user for workshop:", workshop.id);
       // Create a new user record
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .insert({ workshop_id: workshop.id })
+        .insert([{ workshop_id: workshop.id }])
         .select('id')
         .single();
 
       if (userError) {
-        console.error("Error creating user:", userError);
+        console.error("User creation error:", userError);
         toast({
           title: "Error",
           description: "Kon geen nieuwe gebruiker aanmaken. Probeer het opnieuw.",
           variant: "destructive",
         });
+        stopLoading();
         return;
       }
 
@@ -82,9 +90,11 @@ const Index = () => {
           description: "Er is een fout opgetreden bij het aanmaken van een gebruiker.",
           variant: "destructive",
         });
+        stopLoading();
         return;
       }
 
+      console.log("User created successfully:", userData.id);
       // Store session data in localStorage
       const sessionData = {
         userId: userData.id,
