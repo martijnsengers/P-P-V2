@@ -94,11 +94,10 @@ export default function UploadPage() {
         throw submissionError || new Error("Geen inzending ID ontvangen");
       }
 
-      // Update session with submission ID
+      // Update session with submission ID and maintain the same timestamp
       const updatedSession = {
         ...session,
-        submissionId: submissionData.id,
-        timestamp: Date.now()
+        submissionId: submissionData.id
       };
       localStorage.setItem('workshopSession', JSON.stringify(updatedSession));
       console.log("Session updated with submission ID:", updatedSession);
