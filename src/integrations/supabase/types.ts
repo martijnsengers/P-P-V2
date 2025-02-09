@@ -185,13 +185,6 @@ export type Database = {
             referencedRelation: "workshops"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "workshop_must_exist"
-            columns: ["workshop_id"]
-            isOneToOne: false
-            referencedRelation: "workshops"
-            referencedColumns: ["id"]
-          },
         ]
       }
       workshops: {

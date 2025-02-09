@@ -24,16 +24,26 @@ const Index = () => {
       localStorage.removeItem('workshopSession');
 
       // Validate access code against workshops table
-      const { data: workshop, error } = await supabase
+      const { data: workshop, error: workshopError } = await supabase
         .from("workshops")
         .select("id, status")
         .eq("access_code", accessCode.trim())
         .single();
 
-      if (error || !workshop) {
+      if (workshopError) {
+        console.error("Workshop error:", workshopError);
         toast({
           title: "Error",
           description: "Ongeldige toegangscode. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!workshop) {
+        toast({
+          title: "Error",
+          description: "Workshop niet gevonden.",
           variant: "destructive",
         });
         return;
@@ -55,11 +65,21 @@ const Index = () => {
         .select('id')
         .single();
 
-      if (userError || !userData) {
+      if (userError) {
         console.error("Error creating user:", userError);
         toast({
           title: "Error",
-          description: "Er is een fout opgetreden. Probeer het opnieuw.",
+          description: "Kon geen nieuwe gebruiker aanmaken. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!userData) {
+        console.error("No user data returned after creation");
+        toast({
+          title: "Error",
+          description: "Er is een fout opgetreden bij het aanmaken van een gebruiker.",
           variant: "destructive",
         });
         return;
