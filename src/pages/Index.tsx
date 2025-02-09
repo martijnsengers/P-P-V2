@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,17 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import { useLoadingState } from "./Index/hooks/useLoadingState";
 
 const Index = () => {
   const [accessCode, setAccessCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, stopLoading } = useLoadingState();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    startLoading();
 
     try {
       // Clear any existing session data
@@ -92,7 +93,7 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 
