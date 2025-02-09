@@ -51,24 +51,6 @@ const Index = () => {
       // Generate a unique user ID
       const userId = crypto.randomUUID();
 
-      // Create initial submission record
-      const { error: submissionError } = await supabase
-        .from("submissions")
-        .insert({
-          user_id: userId,
-          workshop_id: workshop.id,
-        });
-
-      if (submissionError) {
-        console.error("Error creating submission:", submissionError);
-        toast({
-          title: "Error",
-          description: "Er is een fout opgetreden. Probeer het opnieuw.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Store session data in localStorage
       const sessionData = {
         userId,

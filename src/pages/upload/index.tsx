@@ -78,18 +78,18 @@ export default function UploadPage() {
         .from("original_uploads")
         .getPublicUrl(filename);
 
-      console.log("Public URL:", publicUrl); // Debug log
-
-      // Update the submission with the public image URL
-      const { error: updateError } = await supabase
+      // Create the submission record with the public image URL
+      const { error: submissionError } = await supabase
         .from("submissions")
-        .update({ url_original_image: publicUrl })
-        .eq("user_id", session.userId)
-        .eq("workshop_id", session.workshopId);
+        .insert({
+          user_id: session.userId,
+          workshop_id: session.workshopId,
+          url_original_image: publicUrl
+        });
 
-      if (updateError) {
-        console.error("Update error:", updateError); // Debug log
-        throw updateError;
+      if (submissionError) {
+        console.error("Submission error:", submissionError);
+        throw submissionError;
       }
 
       toast({
