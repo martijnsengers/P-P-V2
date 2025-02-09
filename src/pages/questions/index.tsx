@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Header } from "@/components/Header";
 
 const formSchema = z.object({
   type_organisme: z.enum([
@@ -125,6 +126,7 @@ export default function QuestionsPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
+      <Header subtitle="Create and explore futuristic plant organisms" />
       <div className="w-full max-w-2xl space-y-8 bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
