@@ -18,42 +18,32 @@ export default function QuestionsPage() {
     const session = getSessionData();
     if (!session) return;
 
-    if (!session.submissionId) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Geen inzending gevonden. Start opnieuw.",
-      });
-      navigate("/");
-      return;
-    }
-
     setIsLoading(true);
     console.log("Submitting form with data:", { ...session, ...data });
 
     try {
-      // Update Supabase submissions using the session data
-      const { error: updateError } = await supabase
+      // Create new submission
+      const { data: submission, error: submissionError } = await supabase
         .from("submissions")
-        .update({
+        .insert({
           type_organisme: data.type_organisme,
           kleur_organisme: data.kleur_organisme,
           hoe_groot_organisme: data.hoe_groot_organisme,
           hoeveel_organism: data.hoeveel_organism,
           beschrijving_landschap_user: data.beschrijving_landschap_user,
           kenmerken_user: data.kenmerken_user,
-          user_id: session.userId, // Include user_id from session
-          workshop_id: session.workshopId // Include workshop_id from session
+          user_id: session.userId,
+          workshop_id: session.workshopId
         })
-        .eq('id', session.submissionId)
-        .eq('user_id', session.userId); // Add this condition to match RLS
+        .select('id')
+        .single();
 
-      if (updateError) {
-        console.error("Error updating submission:", updateError);
-        throw new Error("Kon de inzending niet bijwerken");
+      if (submissionError) {
+        console.error("Error creating submission:", submissionError);
+        throw new Error("Kon de inzending niet opslaan");
       }
 
-      console.log("Successfully updated submission");
+      console.log("Successfully created submission:", submission);
 
       toast({
         title: "Succes",

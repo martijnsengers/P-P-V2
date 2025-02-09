@@ -48,12 +48,26 @@ const Index = () => {
         return;
       }
 
-      // Generate a unique user ID
-      const userId = crypto.randomUUID();
+      // Create a new user record
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .insert({ workshop_id: workshop.id })
+        .select('id')
+        .single();
+
+      if (userError || !userData) {
+        console.error("Error creating user:", userError);
+        toast({
+          title: "Error",
+          description: "Er is een fout opgetreden. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Store session data in localStorage
       const sessionData = {
-        userId,
+        userId: userData.id,
         workshopId: workshop.id,
         timestamp: Date.now()
       };
