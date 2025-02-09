@@ -1,9 +1,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -57,9 +57,60 @@ export default function QuestionsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  const { userId, workshopId, imageUrl } = location.state || {};
+
+  // Get session data from localStorage
+  const getSessionData = () => {
+    const session = localStorage.getItem('workshopSession');
+    if (!session) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ongeldige sessie. Start opnieuw.",
+      });
+      navigate("/");
+      return null;
+    }
+    return JSON.parse(session);
+  };
+
+  useEffect(() => {
+    // Verify session and submission on component mount
+    const verifySession = async () => {
+      const session = getSessionData();
+      if (!session) return;
+
+      try {
+        // Verify the submission exists
+        const { data: existingSubmission, error: fetchError } = await supabase
+          .from("submissions")
+          .select("id")
+          .eq("user_id", session.userId)
+          .eq("workshop_id", session.workshopId)
+          .maybeSingle();
+
+        if (fetchError || !existingSubmission) {
+          console.error("Error fetching submission:", fetchError);
+          toast({
+            title: "Error",
+            description: "Kon de inzending niet vinden. Start opnieuw.",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
+      } catch (error) {
+        console.error("Session verification error:", error);
+        toast({
+          title: "Error",
+          description: "Er is een fout opgetreden. Start opnieuw.",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    };
+
+    verifySession();
+  }, [navigate, toast]);
 
   // Initialize form
   const form = useForm<FormType>({
@@ -75,39 +126,13 @@ export default function QuestionsPage() {
   });
 
   async function onSubmit(data: FormType) {
-    // Validate required state
-    if (!userId || !workshopId || !imageUrl) {
-      console.error("Missing required state:", { userId, workshopId, imageUrl });
-      toast({
-        title: "Error",
-        description: "Missende gegevens. Ga terug naar de vorige pagina.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const session = getSessionData();
+    if (!session) return;
 
     setIsLoading(true);
-    console.log("Submitting form with data:", { userId, workshopId, ...data });
+    console.log("Submitting form with data:", { ...session, ...data });
 
     try {
-      // First verify the submission exists
-      const { data: existingSubmission, error: fetchError } = await supabase
-        .from("submissions")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("workshop_id", workshopId)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error("Error fetching submission:", fetchError);
-        throw new Error("Kon de inzending niet vinden");
-      }
-
-      if (!existingSubmission) {
-        console.error("No submission found for:", { userId, workshopId });
-        throw new Error("Geen inzending gevonden. Start opnieuw.");
-      }
-
       // Update Supabase submissions
       const { error: updateError } = await supabase
         .from("submissions")
@@ -119,8 +144,8 @@ export default function QuestionsPage() {
           beschrijving_landschap_user: data.beschrijving_landschap_user,
           kenmerken_user: data.kenmerken_user,
         })
-        .eq("user_id", userId)
-        .eq("workshop_id", workshopId);
+        .eq("user_id", session.userId)
+        .eq("workshop_id", session.workshopId);
 
       if (updateError) {
         console.error("Error updating submission:", updateError);
@@ -133,9 +158,7 @@ export default function QuestionsPage() {
       // We'll need the webhook URL to be provided
 
       // Navigate to loading page
-      navigate("/loading-questions", {
-        state: { userId, workshopId },
-      });
+      navigate("/loading-questions");
     } catch (error) {
       console.error("Form submission error:", error);
       toast({
@@ -317,4 +340,3 @@ export default function QuestionsPage() {
     </div>
   );
 }
-

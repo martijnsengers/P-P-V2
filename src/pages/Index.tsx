@@ -19,6 +19,9 @@ const Index = () => {
     setIsLoading(true);
 
     try {
+      // Clear any existing session data
+      localStorage.removeItem('workshopSession');
+
       // Validate access code against workshops table
       const { data: workshop, error } = await supabase
         .from("workshops")
@@ -65,13 +68,16 @@ const Index = () => {
         return;
       }
 
-      // Navigate to upload page with necessary IDs
-      navigate("/upload", {
-        state: {
-          userId,
-          workshopId: workshop.id,
-        },
-      });
+      // Store session data in localStorage
+      const sessionData = {
+        userId,
+        workshopId: workshop.id,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('workshopSession', JSON.stringify(sessionData));
+
+      // Navigate to upload page
+      navigate("/upload");
 
       toast({
         title: "Welkom",
