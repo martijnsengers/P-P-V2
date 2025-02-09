@@ -48,12 +48,12 @@ const Index = () => {
         return;
       }
 
-      // Generate a unique user ID
-      const userId = crypto.randomUUID();
+      // Generate a temporary user ID for this session
+      const sessionId = crypto.randomUUID();
 
-      // Store session data in localStorage
+      // Store session data
       const sessionData = {
-        userId,
+        userId: sessionId,
         workshopId: workshop.id,
         timestamp: Date.now()
       };
