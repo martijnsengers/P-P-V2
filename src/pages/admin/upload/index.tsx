@@ -28,7 +28,7 @@ export default function UploadPage() {
 
       // Upload to Supabase with explicit content type
       const { data, error } = await supabase.storage
-        .from("original_images")
+        .from("original_uploads")
         .upload(filename, processedFile, {
           contentType: processedFile.type,
           upsert: false
