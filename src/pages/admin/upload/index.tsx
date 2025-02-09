@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import heic2any from "heic2any";
 import { ImagePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -21,7 +20,7 @@ export default function UploadPage() {
     const file = acceptedFiles[0];
 
     try {
-      // Check if file is HEIC/HEIF using both mime type and extension
+      // First determine if it's a HEIC/HEIF file by checking both extension and mime type
       const isHeic = file.type.toLowerCase().includes('heic') || 
                     file.name.toLowerCase().endsWith('.heic') ||
                     file.name.toLowerCase().endsWith('.heif');
@@ -35,31 +34,37 @@ export default function UploadPage() {
         });
 
         try {
-          const blob = await heic2any({
+          // Convert HEIC to JPEG with explicit error handling
+          const convertedBlob = await heic2any({
             blob: file,
             toType: "image/jpeg",
-            quality: 0.8
+            quality: 0.8,
           });
 
-          // Handle both single blob and array of blobs output
-          const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+          // Handle both array and single blob responses
+          const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
           
-          // Create new file with proper name and type
-          processedFile = new File(
-            [resultBlob], 
-            file.name.replace(/\.(heic|HEIC|heif|HEIF)$/, '.jpg'), 
-            { type: "image/jpeg" }
-          );
+          // Create a new filename by replacing the extension
+          const newFilename = file.name.replace(/\.(heic|HEIC|heif|HEIF)$/, '.jpg');
+          
+          // Create a new File object with the converted blob
+          processedFile = new File([finalBlob], newFilename, {
+            type: "image/jpeg",
+            lastModified: new Date().getTime()
+          });
         } catch (conversionError) {
           console.error("HEIC conversion error:", conversionError);
           throw new Error("Could not convert HEIC image. Please try uploading a JPEG or PNG instead.");
         }
       }
 
-      // Upload to Supabase storage with proper content type
+      // Generate a unique filename for storage
+      const filename = `${crypto.randomUUID()}.${processedFile.type === 'image/jpeg' ? 'jpg' : 'png'}`;
+
+      // Upload to Supabase with explicit content type
       const { data, error } = await supabase.storage
         .from("original_images")
-        .upload(`${crypto.randomUUID()}.jpg`, processedFile, {
+        .upload(filename, processedFile, {
           contentType: processedFile.type,
           upsert: false
         });
@@ -71,7 +76,7 @@ export default function UploadPage() {
         description: "Je foto is succesvol geüpload.",
       });
 
-      // Navigate to next page after successful upload
+      // Navigate to next page with the image path
       navigate("/admin/questions", { 
         state: { imageUrl: data.path }
       });
@@ -91,10 +96,10 @@ export default function UploadPage() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-      "image/heic": [".heic"],
-      "image/heif": [".heif"],
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'image/heic': ['.heic'],
+      'image/heif': ['.heif']
     },
     maxFiles: 1,
   });
