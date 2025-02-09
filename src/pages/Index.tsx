@@ -6,32 +6,88 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [accessCode, setAccessCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (accessCode.trim() === "") {
+    setIsLoading(true);
+
+    try {
+      // Validate access code against workshops table
+      const { data: workshop, error } = await supabase
+        .from("workshops")
+        .select("id, status")
+        .eq("access_code", accessCode.trim())
+        .single();
+
+      if (error || !workshop) {
+        toast({
+          title: "Error",
+          description: "Ongeldige toegangscode. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!workshop.status) {
+        toast({
+          title: "Workshop niet actief",
+          description: "Deze workshop is niet meer actief.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Generate a unique user ID
+      const userId = crypto.randomUUID();
+
+      // Create initial submission record
+      const { error: submissionError } = await supabase
+        .from("submissions")
+        .insert({
+          user_id: userId,
+          workshop_id: workshop.id,
+        });
+
+      if (submissionError) {
+        console.error("Error creating submission:", submissionError);
+        toast({
+          title: "Error",
+          description: "Er is een fout opgetreden. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Navigate to upload page with necessary IDs
+      navigate("/admin/upload", {
+        state: {
+          userId,
+          workshopId: workshop.id,
+        },
+      });
+
+      toast({
+        title: "Welkom",
+        description: "Je bent succesvol ingelogd bij de workshop.",
+      });
+
+    } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
-        description: "Please enter an access code",
+        description: "Er is een fout opgetreden. Probeer het opnieuw.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Here we'll later implement proper access code validation
-    // For now, we'll just accept any non-empty code
-    toast({
-      title: "Success",
-      description: "Welcome to Planten en Planeten Image Generator",
-    });
-    
-    // Redirect to upload page
-    navigate("/admin/upload");
   };
 
   useEffect(() => {
@@ -69,14 +125,16 @@ const Index = () => {
                 onChange={(e) => setAccessCode(e.target.value)}
                 className="w-full input-focus"
                 placeholder="Enter your access code"
+                disabled={isLoading}
               />
             </div>
 
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90 text-white"
+              disabled={isLoading}
             >
-              Enter Workshop
+              {isLoading ? "Bezig met inloggen..." : "Enter Workshop"}
             </Button>
           </form>
         </Card>

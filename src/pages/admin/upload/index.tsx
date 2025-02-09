@@ -1,6 +1,6 @@
 
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { ImagePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -8,10 +8,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { uploadHeicWithRetry } from "@/utils/heic-converter";
 
+interface LocationState {
+  userId: string;
+  workshopId: string;
+}
+
 export default function UploadPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+
+  // Get user and workshop IDs from location state
+  const { userId, workshopId } = location.state as LocationState;
+
+  useEffect(() => {
+    // Redirect if no user or workshop ID
+    if (!userId || !workshopId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ongeldige sessie. Start opnieuw.",
+      });
+      navigate("/");
+    }
+  }, [userId, workshopId, navigate, toast]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -36,14 +57,27 @@ export default function UploadPage() {
 
       if (error) throw error;
 
+      // Update the submission with the image URL
+      const { error: updateError } = await supabase
+        .from("submissions")
+        .update({ url_original_image: data.path })
+        .eq("user_id", userId)
+        .eq("workshop_id", workshopId);
+
+      if (updateError) throw updateError;
+
       toast({
         title: "Upload succesvol",
         description: "Je foto is succesvol geüpload.",
       });
 
-      // Navigate to next page with the image path
+      // Navigate to next page with the necessary IDs
       navigate("/questions", { 
-        state: { imageUrl: data.path }
+        state: { 
+          userId,
+          workshopId,
+          imageUrl: data.path 
+        }
       });
 
     } catch (error) {
@@ -56,7 +90,7 @@ export default function UploadPage() {
     } finally {
       setIsUploading(false);
     }
-  }, [navigate, toast]);
+  }, [navigate, toast, userId, workshopId]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
