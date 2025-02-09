@@ -32,7 +32,7 @@ export default function QuestionsPage() {
     console.log("Submitting form with data:", { submissionId: session.submissionId, ...data });
 
     try {
-      // Update Supabase submissions using just the form data and submissionId
+      // First, update Supabase submissions with form data
       const { error: updateError } = await supabase
         .from("submissions")
         .update({
@@ -48,6 +48,57 @@ export default function QuestionsPage() {
       if (updateError) {
         console.error("Error updating submission:", updateError);
         throw new Error("Kon de inzending niet bijwerken");
+      }
+
+      // Fetch the submission to get the url_original_image
+      const { data: submission, error: fetchError } = await supabase
+        .from("submissions")
+        .select("url_original_image")
+        .eq('id', session.submissionId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching submission:", fetchError);
+        throw new Error("Kon de originele afbeelding niet ophalen");
+      }
+
+      // Send data to Make.com webhook
+      const webhookData = {
+        type_organisme: data.type_organisme,
+        kleur_organisme: data.kleur_organisme,
+        hoe_groot_organisme: data.hoe_groot_organisme,
+        beschrijving_landschap_user: data.beschrijving_landschap_user,
+        kenmerken_user: data.kenmerken_user,
+        user_id: session.userId,
+        url_original_image: submission.url_original_image,
+      };
+
+      const webhookResponse = await fetch('https://hook.eu2.make.com/cn0yf1jvv8uuvo7nh2f89j26qpi8km71', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData),
+      });
+
+      if (!webhookResponse.ok) {
+        throw new Error("Fout bij het versturen naar de AI service");
+      }
+
+      const webhookResult = await webhookResponse.json();
+      
+      // Update Supabase with the received questions
+      const { error: questionsUpdateError } = await supabase
+        .from("submissions")
+        .update({
+          feedback_vraag1: webhookResult.feedback_vraag1,
+          feedback_vraag2: webhookResult.feedback_vraag2,
+        })
+        .eq('id', session.submissionId);
+
+      if (questionsUpdateError) {
+        console.error("Error updating questions:", questionsUpdateError);
+        throw new Error("Kon de vragen niet opslaan");
       }
 
       console.log("Successfully updated submission");
