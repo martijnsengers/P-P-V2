@@ -11,7 +11,7 @@ import AdminInit from "./pages/AdminInit";
 import AdminDashboard from "./pages/admin/Dashboard";
 import WorkshopsPage from "./pages/admin/workshops";
 import GalleryPage from "./pages/admin/gallery";
-import UploadPage from "./pages/admin/upload";
+import UploadPage from "./pages/upload";
 
 const queryClient = new QueryClient();
 
@@ -22,13 +22,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* User Routes */}
           <Route path="/" element={<Index />} />
+          <Route path="/upload" element={<UploadPage />} />
+          
+          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/init" element={<AdminInit />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/workshops" element={<WorkshopsPage />} />
           <Route path="/admin/gallery" element={<GalleryPage />} />
-          <Route path="/admin/upload" element={<UploadPage />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

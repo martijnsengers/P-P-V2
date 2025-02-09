@@ -66,7 +66,7 @@ const Index = () => {
       }
 
       // Navigate to upload page with necessary IDs
-      navigate("/admin/upload", {
+      navigate("/upload", {
         state: {
           userId,
           workshopId: workshop.id,
