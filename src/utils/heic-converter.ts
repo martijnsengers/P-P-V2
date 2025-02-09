@@ -1,5 +1,48 @@
 
-import heic2any from "heic2any";
+/**
+ * Utility functions for converting HEIC images to JPEG format using browser-native APIs
+ */
+
+async function convertUsingBrowserNative(file: File): Promise<File> {
+  try {
+    // Create an image bitmap from the file
+    const bitmap = await createImageBitmap(file);
+    
+    // Create a canvas with the same dimensions
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    
+    // Get the canvas context and draw the image
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error("Could not get canvas context");
+    }
+    
+    // Draw the image onto the canvas
+    ctx.drawImage(bitmap, 0, 0);
+    
+    // Convert to blob with JPEG format
+    const blob = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          throw new Error("Failed to convert canvas to blob");
+        }
+      }, 'image/jpeg', 0.8);
+    });
+
+    // Create new filename
+    const newFilename = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+
+    // Return as File object
+    return new File([blob], newFilename, { type: 'image/jpeg' });
+  } catch (error) {
+    console.error('Browser native conversion error:', error);
+    throw error;
+  }
+}
 
 export async function convertHeicToJpeg(file: File): Promise<File> {
   // Basic validation
@@ -15,28 +58,7 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
   });
 
   try {
-    // Try with minimal options first
-    const convertedBlob = await heic2any({
-      blob: file,
-      toType: "image/jpeg",
-      quality: 0.7,  // Lower quality for better compatibility
-    });
-
-    if (!convertedBlob) {
-      throw new Error("Conversion returned null result");
-    }
-
-    // Handle potential array result
-    const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-
-    // Create new filename
-    const newFilename = file.name.replace(/\.(heic|heif)$/i, ".jpg");
-
-    // Create new File with minimal metadata
-    return new File([finalBlob], newFilename, {
-      type: "image/jpeg"
-    });
-
+    return await convertUsingBrowserNative(file);
   } catch (error) {
     // Log detailed error for debugging
     console.error("HEIC conversion detailed error:", {
@@ -50,7 +72,7 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
       }
     });
 
-    throw error; // Re-throw to handle in calling code
+    throw error;
   }
 }
 
