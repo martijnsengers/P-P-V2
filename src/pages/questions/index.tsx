@@ -18,11 +18,21 @@ export default function QuestionsPage() {
     const session = getSessionData();
     if (!session) return;
 
+    if (!session.submissionId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Geen inzending gevonden. Start opnieuw.",
+      });
+      navigate("/");
+      return;
+    }
+
     setIsLoading(true);
     console.log("Submitting form with data:", { ...session, ...data });
 
     try {
-      // Update Supabase submissions
+      // Update Supabase submissions using the specific submission ID
       const { error: updateError } = await supabase
         .from("submissions")
         .update({
@@ -33,8 +43,7 @@ export default function QuestionsPage() {
           beschrijving_landschap_user: data.beschrijving_landschap_user,
           kenmerken_user: data.kenmerken_user,
         })
-        .eq("user_id", session.userId)
-        .eq("workshop_id", session.workshopId);
+        .eq("id", session.submissionId);
 
       if (updateError) {
         console.error("Error updating submission:", updateError);
@@ -49,7 +58,12 @@ export default function QuestionsPage() {
       });
 
       // Navigate to loading page
-      navigate("/loading-questions");
+      navigate("/loading-questions", {
+        state: { 
+          userId: session.userId, 
+          workshopId: session.workshopId 
+        }
+      });
     } catch (error) {
       console.error("Form submission error:", error);
       toast({

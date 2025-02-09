@@ -27,14 +27,22 @@ export const useSessionValidation = () => {
       const session = getSessionData();
       if (!session) return;
 
+      if (!session.submissionId) {
+        toast({
+          title: "Error",
+          description: "Geen inzending ID gevonden. Start opnieuw.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
       try {
         // Get submission by specific ID stored in session
         const { data: existingSubmission, error: fetchError } = await supabase
           .from("submissions")
           .select("id")
           .eq("id", session.submissionId)
-          .eq("user_id", session.userId)
-          .eq("workshop_id", session.workshopId)
           .maybeSingle();
 
         if (fetchError || !existingSubmission) {

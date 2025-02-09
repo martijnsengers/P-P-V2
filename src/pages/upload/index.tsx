@@ -97,16 +97,18 @@ export default function UploadPage() {
       // Update session with submission ID
       const updatedSession = {
         ...session,
-        submissionId: submissionData.id
+        submissionId: submissionData.id,
+        timestamp: Date.now()
       };
       localStorage.setItem('workshopSession', JSON.stringify(updatedSession));
+      console.log("Session updated with submission ID:", updatedSession);
 
       toast({
         title: "Upload succesvol",
         description: "Je foto is succesvol geüpload.",
       });
 
-      // Navigate to next page with submission ID
+      // Navigate to questions page
       navigate("/questions");
 
     } catch (error) {
