@@ -79,25 +79,34 @@ export default function UploadPage() {
         .getPublicUrl(filename);
 
       // Create the submission record with the public image URL
-      const { error: submissionError } = await supabase
+      const { data: submissionData, error: submissionError } = await supabase
         .from("submissions")
         .insert({
           user_id: session.userId,
           workshop_id: session.workshopId,
           url_original_image: publicUrl
-        });
+        })
+        .select('id')
+        .single();
 
-      if (submissionError) {
+      if (submissionError || !submissionData) {
         console.error("Submission error:", submissionError);
-        throw submissionError;
+        throw submissionError || new Error("Geen inzending ID ontvangen");
       }
+
+      // Update session with submission ID
+      const updatedSession = {
+        ...session,
+        submissionId: submissionData.id
+      };
+      localStorage.setItem('workshopSession', JSON.stringify(updatedSession));
 
       toast({
         title: "Upload succesvol",
         description: "Je foto is succesvol geüpload.",
       });
 
-      // Navigate to next page
+      // Navigate to next page with submission ID
       navigate("/questions");
 
     } catch (error) {

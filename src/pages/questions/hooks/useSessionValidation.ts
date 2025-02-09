@@ -28,9 +28,11 @@ export const useSessionValidation = () => {
       if (!session) return;
 
       try {
+        // Get submission by specific ID stored in session
         const { data: existingSubmission, error: fetchError } = await supabase
           .from("submissions")
           .select("id")
+          .eq("id", session.submissionId)
           .eq("user_id", session.userId)
           .eq("workshop_id", session.workshopId)
           .maybeSingle();
