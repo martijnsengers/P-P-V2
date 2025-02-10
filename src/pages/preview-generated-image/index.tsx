@@ -52,6 +52,14 @@ const PreviewGeneratedImagePage = () => {
   const [previousSubmission, setPreviousSubmission] = useState<Submission | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  const getPublicUrl = (filename: string) => {
+    if (!filename) return null;
+    const { data } = supabase.storage
+      .from("generated_images")
+      .getPublicUrl(filename);
+    return data?.publicUrl;
+  };
+
   useEffect(() => {
     const fetchSubmission = async () => {
       if (!location.state?.submissionId) {
@@ -70,7 +78,12 @@ const PreviewGeneratedImagePage = () => {
         return;
       }
 
-      setSubmission(currentSubmission);
+      // Update submission with the correct public URL
+      const submissionWithUrl = {
+        ...currentSubmission,
+        ai_image_url: getPublicUrl(currentSubmission.ai_image_url),
+      };
+      setSubmission(submissionWithUrl);
 
       // Check for previous submission with same user_id
       const storedUserId = localStorage.getItem("regenerating_user_id");
@@ -85,7 +98,12 @@ const PreviewGeneratedImagePage = () => {
           .single();
 
         if (previousData) {
-          setPreviousSubmission(previousData);
+          // Update previous submission with the correct public URL
+          const previousWithUrl = {
+            ...previousData,
+            ai_image_url: getPublicUrl(previousData.ai_image_url),
+          };
+          setPreviousSubmission(previousWithUrl);
         }
       }
     };
