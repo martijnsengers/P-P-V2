@@ -67,11 +67,12 @@ export default function QuestionsPage() {
         type_organisme: data.type_organisme,
         kleur_organisme: data.kleur_organisme,
         hoe_groot_organisme: data.hoe_groot_organisme,
+        hoeveel_organism: data.hoeveel_organism, // Added this field
         beschrijving_landschap_user: data.beschrijving_landschap_user,
         kenmerken_user: data.kenmerken_user,
         user_id: session.userId,
         url_original_image: submission.url_original_image,
-        image_id: session.submissionId, // Added image_id to the webhook data
+        image_id: session.submissionId,
       };
 
       const webhookResponse = await fetch('https://hkdk.events/1adn4uq1w3ber2', {
