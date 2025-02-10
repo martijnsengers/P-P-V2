@@ -89,6 +89,7 @@ export type Database = {
           id: string
           kenmerken_user: string | null
           kleur_organisme: string | null
+          summary: string | null
           type_organisme: string | null
           url_original_image: string | null
           user_id: string
@@ -114,6 +115,7 @@ export type Database = {
           id?: string
           kenmerken_user?: string | null
           kleur_organisme?: string | null
+          summary?: string | null
           type_organisme?: string | null
           url_original_image?: string | null
           user_id: string
@@ -139,6 +141,7 @@ export type Database = {
           id?: string
           kenmerken_user?: string | null
           kleur_organisme?: string | null
+          summary?: string | null
           type_organisme?: string | null
           url_original_image?: string | null
           user_id?: string
