@@ -4,16 +4,33 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoadingGeneratedImagePage() {
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { userId, workshopId } = location.state || {};
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (!userId || !workshopId) {
-      setError("Missende gegevens. Ga terug naar de vorige pagina.");
+    // Get session data from localStorage
+    const sessionData = localStorage.getItem('workshopSession');
+    if (!sessionData) {
+      setError("Geen geldige sessie gevonden.");
+      toast({
+        variant: "destructive",
+        title: "Fout",
+        description: "Geen geldige sessie gevonden.",
+      });
+      navigate("/");
+      return;
+    }
+
+    const session = JSON.parse(sessionData);
+    const userId = session.userId;
+
+    if (!userId) {
+      setError("Geen gebruiker ID gevonden.");
       return;
     }
 
@@ -23,7 +40,6 @@ export default function LoadingGeneratedImagePage() {
           .from("submissions")
           .select("*")
           .eq("user_id", userId)
-          .eq("workshop_id", workshopId)
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
@@ -61,7 +77,7 @@ export default function LoadingGeneratedImagePage() {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [userId, workshopId, navigate]);
+  }, [navigate, toast]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
