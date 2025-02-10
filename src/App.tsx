@@ -14,6 +14,8 @@ import GalleryPage from "./pages/admin/gallery";
 import UploadPage from "./pages/upload";
 import QuestionsPage from "./pages/questions";
 import LoadingQuestionsPage from "./pages/loading-questions";
+import FeedbackQuestionsPage from "./pages/feedback-questions";
+import LoadingGeneratedImagePage from "./pages/loading-generated-image";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/questions" element={<QuestionsPage />} />
           <Route path="/loading-questions" element={<LoadingQuestionsPage />} />
+          <Route path="/feedback-questions" element={<FeedbackQuestionsPage />} />
+          <Route path="/loading-generated-image" element={<LoadingGeneratedImagePage />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
