@@ -52,14 +52,6 @@ const PreviewGeneratedImagePage = () => {
   const [previousSubmission, setPreviousSubmission] = useState<Submission | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const getPublicUrl = (filename: string) => {
-    if (!filename) return null;
-    const { data } = supabase.storage
-      .from("generated_images")
-      .getPublicUrl(filename);
-    return data?.publicUrl;
-  };
-
   useEffect(() => {
     const fetchSubmission = async () => {
       if (!location.state?.submissionId) {
@@ -73,17 +65,12 @@ const PreviewGeneratedImagePage = () => {
         .eq("id", location.state.submissionId)
         .single();
 
-      if (error) {
-        toast.error("Error loading submission");
+      if (error || !currentSubmission?.ai_image_url) {
+        toast.error("Error loading submission or no image available");
         return;
       }
 
-      // Update submission with the correct public URL
-      const submissionWithUrl = {
-        ...currentSubmission,
-        ai_image_url: getPublicUrl(currentSubmission.ai_image_url),
-      };
-      setSubmission(submissionWithUrl);
+      setSubmission(currentSubmission);
 
       // Check for previous submission with same user_id
       const storedUserId = localStorage.getItem("regenerating_user_id");
@@ -97,13 +84,8 @@ const PreviewGeneratedImagePage = () => {
           .limit(1)
           .single();
 
-        if (previousData) {
-          // Update previous submission with the correct public URL
-          const previousWithUrl = {
-            ...previousData,
-            ai_image_url: getPublicUrl(previousData.ai_image_url),
-          };
-          setPreviousSubmission(previousWithUrl);
+        if (previousData?.ai_image_url) {
+          setPreviousSubmission(previousData);
         }
       }
     };
@@ -167,7 +149,7 @@ AI Description: ${submission.ai_description}
     }
   };
 
-  if (!submission) {
+  if (!submission?.ai_image_url) {
     return <div>Loading...</div>;
   }
 
