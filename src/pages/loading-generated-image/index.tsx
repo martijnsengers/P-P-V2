@@ -21,17 +21,22 @@ export default function LoadingGeneratedImagePage() {
       try {
         const { data, error: submissionError } = await supabase
           .from("submissions")
-          .select("ai_image_url")
+          .select("*")
           .eq("user_id", userId)
           .eq("workshop_id", workshopId)
-          .maybeSingle();
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
 
         if (submissionError) throw submissionError;
 
         if (data?.ai_image_url) {
+          // Store the user_id for regeneration tracking
+          localStorage.setItem("regenerating_user_id", userId);
+          
           // Generated image is ready, navigate to preview page
           navigate("/preview-generated-image", {
-            state: { userId, workshopId },
+            state: { submissionId: data.id, userId: userId },
           });
         }
       } catch (error) {

@@ -49,44 +49,35 @@ const PreviewGeneratedImagePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [submission, setSubmission] = useState<Submission | null>(null);
-  const [previousSubmission, setPreviousSubmission] = useState<Submission | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const [previousSubmission, setPreviousSubmission] = useState<Submission | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchSubmission = async () => {
-      if (!location.state?.submissionId) {
+      if (!location.state?.userId) {
         navigate("/");
         return;
       }
 
-      const { data: currentSubmission, error } = await supabase
+      const { data: submissions, error } = await supabase
         .from("submissions")
         .select("*")
-        .eq("id", location.state.submissionId)
-        .single();
+        .eq("user_id", location.state.userId)
+        .order("created_at", { ascending: false })
+        .limit(2);
 
-      if (error || !currentSubmission?.ai_image_url) {
+      if (error || !submissions?.[0]?.ai_image_url) {
+        console.error("Error loading submissions:", error);
         toast.error("Error loading submission or no image available");
         return;
       }
 
-      setSubmission(currentSubmission);
+      setSubmission(submissions[0]);
 
-      // Check for previous submission with same user_id
-      const storedUserId = localStorage.getItem("regenerating_user_id");
-      if (storedUserId && storedUserId === currentSubmission.user_id) {
-        const { data: previousData } = await supabase
-          .from("submissions")
-          .select("*")
-          .eq("user_id", storedUserId)
-          .neq("id", location.state.submissionId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (previousData?.ai_image_url) {
-          setPreviousSubmission(previousData);
-        }
+      // If there's a previous submission, set it
+      if (submissions.length > 1 && submissions[1]?.ai_image_url) {
+        setPreviousSubmission(submissions[1]);
       }
     };
 
@@ -155,25 +146,63 @@ AI Description: ${submission.ai_description}
 
   const renderSubmissionDetails = (sub: Submission) => (
     <div className="space-y-4 text-sm">
-      <p><strong>Created:</strong> {format(new Date(sub.created_at), "PPpp")}</p>
-      <p><strong>User ID:</strong> {sub.user_id}</p>
-      <p><strong>Type:</strong> {sub.type_organisme}</p>
-      <p><strong>Color:</strong> {sub.kleur_organisme}</p>
-      <p><strong>Size:</strong> {sub.hoe_groot_organisme}</p>
-      <p><strong>Amount:</strong> {sub.hoeveel_organism}</p>
-      <p><strong>Landscape:</strong> {sub.beschrijving_landschap_user}</p>
-      <p><strong>Features:</strong> {sub.kenmerken_user}</p>
-      <p><strong>Question 1:</strong> {sub.feedback_vraag1}</p>
-      <p><strong>Answer 1:</strong> {sub.feedback_antwoord1}</p>
-      <p><strong>Question 2:</strong> {sub.feedback_vraag2}</p>
-      <p><strong>Answer 2:</strong> {sub.feedback_antwoord2}</p>
-      <p><strong>Adjust:</strong> {sub.adjust_organisme ? "Yes" : "No"}</p>
-      <p><strong>AI Description:</strong> {sub.ai_description}</p>
-      <p><strong>AI Analysis:</strong> {sub.ai_model_image_analyse}</p>
-      <p><strong>AI Prompt:</strong> {sub.ai_prompt}</p>
-      <p><strong>Prompt Model:</strong> {sub.ai_model_prompt_generation}</p>
-      <p><strong>Image Model:</strong> {sub.ai_model_image_generation}</p>
-      <p><strong>Image Ratio:</strong> {sub.ai_image_ratio}</p>
+      <p>
+        <strong>Created:</strong> {format(new Date(sub.created_at), "PPpp")}
+      </p>
+      <p>
+        <strong>User ID:</strong> {sub.user_id}
+      </p>
+      <p>
+        <strong>Type:</strong> {sub.type_organisme}
+      </p>
+      <p>
+        <strong>Color:</strong> {sub.kleur_organisme}
+      </p>
+      <p>
+        <strong>Size:</strong> {sub.hoe_groot_organisme}
+      </p>
+      <p>
+        <strong>Amount:</strong> {sub.hoeveel_organism}
+      </p>
+      <p>
+        <strong>Landscape:</strong> {sub.beschrijving_landschap_user}
+      </p>
+      <p>
+        <strong>Features:</strong> {sub.kenmerken_user}
+      </p>
+      <p>
+        <strong>Question 1:</strong> {sub.feedback_vraag1}
+      </p>
+      <p>
+        <strong>Answer 1:</strong> {sub.feedback_antwoord1}
+      </p>
+      <p>
+        <strong>Question 2:</strong> {sub.feedback_vraag2}
+      </p>
+      <p>
+        <strong>Answer 2:</strong> {sub.feedback_antwoord2}
+      </p>
+      <p>
+        <strong>Adjust:</strong> {sub.adjust_organisme ? "Yes" : "No"}
+      </p>
+      <p>
+        <strong>AI Description:</strong> {sub.ai_description}
+      </p>
+      <p>
+        <strong>AI Analysis:</strong> {sub.ai_model_image_analyse}
+      </p>
+      <p>
+        <strong>AI Prompt:</strong> {sub.ai_prompt}
+      </p>
+      <p>
+        <strong>Prompt Model:</strong> {sub.ai_model_prompt_generation}
+      </p>
+      <p>
+        <strong>Image Model:</strong> {sub.ai_model_image_generation}
+      </p>
+      <p>
+        <strong>Image Ratio:</strong> {sub.ai_image_ratio}
+      </p>
     </div>
   );
 
