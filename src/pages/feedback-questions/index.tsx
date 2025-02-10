@@ -6,37 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 
-type FeedbackQuestion = {
-  feedback_vraag1: string;
-  feedback_vraag2: string;
-};
-
 export default function FeedbackQuestionsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userId, workshopId, feedback_vraag1, feedback_vraag2 } = location.state || {};
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Parse the nested JSON questions
-  const parseQuestions = () => {
-    try {
-      const q1Data: FeedbackQuestion = JSON.parse(feedback_vraag1);
-      const q2Data: FeedbackQuestion = JSON.parse(feedback_vraag2);
-      return {
-        question1: q1Data.feedback_vraag1,
-        question2: q2Data.feedback_vraag2,
-      };
-    } catch (error) {
-      console.error("Error parsing questions:", error);
-      return {
-        question1: "Error loading question 1",
-        question2: "Error loading question 2",
-      };
-    }
-  };
-
-  const { question1, question2 } = parseQuestions();
+  const [question1Answered, setQuestion1Answered] = useState(false);
+  const [question2Answered, setQuestion2Answered] = useState(false);
 
   useEffect(() => {
     if (!userId || !workshopId || !feedback_vraag1 || !feedback_vraag2) {
@@ -111,9 +88,6 @@ export default function FeedbackQuestionsPage() {
     }
   };
 
-  const [question1Answered, setQuestion1Answered] = useState(false);
-  const [question2Answered, setQuestion2Answered] = useState(false);
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
       <Header subtitle="Beantwoord de vragen over je organisme" />
@@ -121,7 +95,7 @@ export default function FeedbackQuestionsPage() {
         {/* Question 1 */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Vraag 1:</h2>
-          <p className="text-lg">{question1}</p>
+          <p className="text-lg">{feedback_vraag1}</p>
           <div className="flex gap-4">
             <Button 
               onClick={() => handleAnswer(1, "ja")}
@@ -143,7 +117,7 @@ export default function FeedbackQuestionsPage() {
         {/* Question 2 */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Vraag 2:</h2>
-          <p className="text-lg">{question2}</p>
+          <p className="text-lg">{feedback_vraag2}</p>
           <div className="flex gap-4">
             <Button
               onClick={() => handleAnswer(2, "ja")}
