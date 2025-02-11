@@ -15,12 +15,12 @@ export const ImageDialog = ({ imageUrl, index, totalSubmissions }: ImageDialogPr
         <img
           src={imageUrl}
           alt={`Generated organism ${totalSubmissions - index}`}
-          className="w-full h-auto rounded-lg cursor-zoom-in"
+          className="w-full h-auto cursor-zoom-in"
         />
       </DialogTrigger>
-      <DialogContent className="max-w-screen-lg">
-        <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <X className="h-4 w-4" />
+      <DialogContent className="max-w-screen-lg p-0 border-0 bg-transparent">
+        <DialogClose className="absolute right-4 top-4 rounded-full bg-white/90 p-2 shadow-lg hover:bg-white transition-colors">
+          <X className="h-4 w-4 text-gray-900" />
           <span className="sr-only">Close</span>
         </DialogClose>
         <img
@@ -32,4 +32,3 @@ export const ImageDialog = ({ imageUrl, index, totalSubmissions }: ImageDialogPr
     </Dialog>
   );
 };
-

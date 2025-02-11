@@ -20,15 +20,17 @@ export const GeneratedImageCard = ({
   return (
     <Card className="mb-8">
       <CardContent className="pt-6">
-        <h2 className="text-lg font-semibold mb-4">
-          {index === 0 ? "Latest Generation" : `Generation ${totalSubmissions - index}`}
-        </h2>
         {submission.ai_image_url && (
           <ImageDialog
             imageUrl={submission.ai_image_url}
             index={index}
             totalSubmissions={totalSubmissions}
           />
+        )}
+        {submission.latin_name && (
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">
+            {submission.latin_name}
+          </h2>
         )}
         <p className="mt-4 text-gray-600">{submission.summary}</p>
       </CardContent>
@@ -43,4 +45,3 @@ export const GeneratedImageCard = ({
     </Card>
   );
 };
-
