@@ -111,10 +111,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[30%]">Title</TableHead>
-            <TableHead className="w-[25%]">Access Code</TableHead>
-            <TableHead className="w-[15%]">Status</TableHead>
-            <TableHead className="w-[15%]">Created At</TableHead>
+            <TableHead className="w-[30%] text-left">Title</TableHead>
+            <TableHead className="w-[25%] text-left">Access Code</TableHead>
+            <TableHead className="w-[15%] text-left">Status</TableHead>
+            <TableHead className="w-[15%] text-left">Created At</TableHead>
             <TableHead className="w-[15%] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>

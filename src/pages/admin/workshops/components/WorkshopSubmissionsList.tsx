@@ -46,10 +46,10 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
   }
 
   return (
-    <div className="space-y-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {submissions.map((submission, index) => (
         <GeneratedImageCard
-          key={submission.id} // Changed from created_at to id for better uniqueness
+          key={submission.id}
           submission={submission}
           index={index}
           totalSubmissions={submissions.length}
