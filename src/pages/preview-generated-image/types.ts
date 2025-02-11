@@ -1,5 +1,6 @@
 
 export type Submission = {
+  id: string;
   user_id: string;
   created_at: string;
   type_organisme: string | null;
@@ -24,3 +25,4 @@ export type Submission = {
   url_original_image: string | null;
   workshop_id: string | null;
 };
+
