@@ -11,7 +11,7 @@ export const Header = ({ subtitle }: HeaderProps) => {
       <div className="flex justify-center">
         <Leaf className="h-12 w-12 text-primary" />
       </div>
-      <div className="text-4xl font-extrabold text-primary space-y-2">
+      <div className="text-4xl font-extrabold text-primary space-y-1 leading-tight">
         <div>Planten en Planeten</div>
         <div>AI Assistent</div>
       </div>
