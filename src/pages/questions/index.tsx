@@ -53,7 +53,7 @@ export default function QuestionsPage() {
       // Fetch the submission to get the url_original_image
       const { data: submission, error: fetchError } = await supabase
         .from("submissions")
-        .select("url_original_image")
+        .select("url_original_image, user_id")
         .eq('id', session.submissionId)
         .single();
 
@@ -67,10 +67,10 @@ export default function QuestionsPage() {
         type_organisme: data.type_organisme,
         kleur_organisme: data.kleur_organisme,
         hoe_groot_organisme: data.hoe_groot_organisme,
-        hoeveel_organism: data.hoeveel_organism, // Added this field
+        hoeveel_organism: data.hoeveel_organism,
         beschrijving_landschap_user: data.beschrijving_landschap_user,
         kenmerken_user: data.kenmerken_user,
-        user_id: session.userId,
+        user_id: submission.user_id,
         url_original_image: submission.url_original_image,
         image_id: session.submissionId,
       };
@@ -110,11 +110,11 @@ export default function QuestionsPage() {
         description: "Je antwoorden zijn succesvol opgeslagen.",
       });
 
-      // Navigate to loading page
+      // Navigate to loading page with only submissionId and userId (for preview later)
       navigate("/loading-questions", {
         state: { 
-          userId: session.userId, 
-          workshopId: session.workshopId 
+          submissionId: session.submissionId,
+          userId: submission.user_id
         }
       });
     } catch (error) {

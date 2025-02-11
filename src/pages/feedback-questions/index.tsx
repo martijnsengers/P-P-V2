@@ -10,13 +10,13 @@ export default function FeedbackQuestionsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userId, workshopId, feedback_vraag1, feedback_vraag2 } = location.state || {};
+  const { submissionId, userId, feedback_vraag1, feedback_vraag2 } = location.state || {};
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [question1Answered, setQuestion1Answered] = useState(false);
   const [question2Answered, setQuestion2Answered] = useState(false);
 
   useEffect(() => {
-    if (!userId || !workshopId || !feedback_vraag1 || !feedback_vraag2) {
+    if (!submissionId || !feedback_vraag1 || !feedback_vraag2) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -24,7 +24,7 @@ export default function FeedbackQuestionsPage() {
       });
       navigate("/");
     }
-  }, [userId, workshopId, feedback_vraag1, feedback_vraag2, navigate, toast]);
+  }, [submissionId, feedback_vraag1, feedback_vraag2, navigate, toast]);
 
   const handleAnswer = async (
     questionNumber: 1 | 2,
@@ -36,8 +36,7 @@ export default function FeedbackQuestionsPage() {
         .update({
           [`feedback_antwoord${questionNumber}`]: answer,
         })
-        .eq("user_id", userId)
-        .eq("workshop_id", workshopId);
+        .eq("id", submissionId);
 
       if (error) throw error;
 
@@ -65,8 +64,7 @@ export default function FeedbackQuestionsPage() {
         .update({
           adjust_organisme: adjust,
         })
-        .eq("user_id", userId)
-        .eq("workshop_id", workshopId);
+        .eq("id", submissionId);
 
       if (error) throw error;
 
@@ -74,7 +72,7 @@ export default function FeedbackQuestionsPage() {
         navigate("/upload");
       } else {
         navigate("/loading-generated-image", {
-          state: { userId, workshopId }
+          state: { userId }
         });
       }
     } catch (error) {

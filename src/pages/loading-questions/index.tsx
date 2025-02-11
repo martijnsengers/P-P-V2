@@ -8,10 +8,10 @@ export default function LoadingQuestionsPage() {
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { userId, workshopId } = location.state || {};
+  const { submissionId, userId } = location.state || {};
 
   useEffect(() => {
-    if (!userId || !workshopId) {
+    if (!submissionId) {
       setError("Missende gegevens. Ga terug naar de vorige pagina.");
       return;
     }
@@ -21,9 +21,8 @@ export default function LoadingQuestionsPage() {
         const { data, error: submissionError } = await supabase
           .from("submissions")
           .select("feedback_vraag1, feedback_vraag2")
-          .eq("user_id", userId)
-          .eq("workshop_id", workshopId)
-          .maybeSingle();
+          .eq("id", submissionId)
+          .single();
 
         if (submissionError) throw submissionError;
 
@@ -31,8 +30,8 @@ export default function LoadingQuestionsPage() {
           // Questions are ready, navigate to feedback questions page
           navigate("/feedback-questions", {
             state: { 
-              userId, 
-              workshopId,
+              submissionId,
+              userId,
               feedback_vraag1: data.feedback_vraag1,
               feedback_vraag2: data.feedback_vraag2
             },
@@ -60,7 +59,7 @@ export default function LoadingQuestionsPage() {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [userId, workshopId, navigate]);
+  }, [submissionId, userId, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#E1E6E0]">
