@@ -24,5 +24,5 @@ export type Submission = {
   summary: string | null;
   url_original_image: string | null;
   workshop_id: string | null;
+  latin_name: string | null;
 };
-
