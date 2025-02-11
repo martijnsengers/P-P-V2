@@ -43,48 +43,46 @@ type Submission = {
   ai_image_ratio: string | null;
   ai_image_url: string | null;
   summary: string | null;
+  url_original_image: string | null;
+  workshop_id: string | null;
 };
 
 const PreviewGeneratedImagePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [submission, setSubmission] = useState<Submission | null>(null);
-  const [previousSubmission, setPreviousSubmission] = useState<Submission | null>(
-    null
-  );
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   useEffect(() => {
-    const fetchSubmission = async () => {
+    const fetchSubmissions = async () => {
       if (!location.state?.userId) {
         navigate("/");
         return;
       }
 
-      const { data: submissions, error } = await supabase
+      const { data: fetchedSubmissions, error } = await supabase
         .from("submissions")
         .select("*")
         .eq("user_id", location.state.userId)
-        .order("created_at", { ascending: false })
-        .limit(2);
+        .order("created_at", { ascending: false });
 
-      if (error || !submissions?.[0]?.ai_image_url) {
+      if (error) {
         console.error("Error loading submissions:", error);
-        toast.error("Error loading submission or no image available");
+        toast.error("Error loading submissions");
         return;
       }
 
-      setSubmission(submissions[0]);
-
-      // If there's a previous submission, set it
-      if (submissions.length > 1 && submissions[1]?.ai_image_url) {
-        setPreviousSubmission(submissions[1]);
+      if (!fetchedSubmissions?.[0]?.ai_image_url) {
+        toast.error("No image available");
+        return;
       }
+
+      setSubmissions(fetchedSubmissions);
     };
 
-    fetchSubmission();
+    fetchSubmissions();
   }, [location.state, navigate]);
 
-  const handleShare = async () => {
+  const handleShare = async (submission: Submission) => {
     try {
       if (!submission?.ai_image_url) return;
 
@@ -110,7 +108,6 @@ AI Description: ${submission.ai_description}
           text: detailsText,
         });
       } else {
-        // Fallback to email sharing
         const mailtoLink = `mailto:?subject=Generated Organism&body=${encodeURIComponent(detailsText)}`;
         window.open(mailtoLink);
       }
@@ -119,7 +116,7 @@ AI Description: ${submission.ai_description}
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (submission: Submission) => {
     try {
       if (!submission?.ai_image_url) return;
       const link = document.createElement("a");
@@ -133,14 +130,40 @@ AI Description: ${submission.ai_description}
     }
   };
 
-  const handleRegenerate = () => {
-    if (submission?.user_id) {
-      localStorage.setItem("regenerating_user_id", submission.user_id);
-      navigate("/upload");
+  const handleRegenerate = async () => {
+    if (!submissions[0]) return;
+
+    try {
+      // Create new submission with original image
+      const { data: newSubmission, error: submissionError } = await supabase
+        .from("submissions")
+        .insert({
+          user_id: submissions[0].user_id,
+          url_original_image: submissions[0].url_original_image,
+          workshop_id: submissions[0].workshop_id,
+        })
+        .select()
+        .single();
+
+      if (submissionError) throw submissionError;
+
+      // Store regeneration data
+      const sessionData = {
+        userId: submissions[0].user_id,
+        submissionId: newSubmission.id,
+        workshopId: submissions[0].workshop_id,
+      };
+      localStorage.setItem("workshopSession", JSON.stringify(sessionData));
+
+      // Navigate to questions page
+      navigate("/questions");
+    } catch (error) {
+      console.error("Error starting regeneration:", error);
+      toast.error("Error starting regeneration");
     }
   };
 
-  if (!submission?.ai_image_url) {
+  if (submissions.length === 0) {
     return <div>Loading...</div>;
   }
 
@@ -208,16 +231,18 @@ AI Description: ${submission.ai_description}
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
-      {previousSubmission && (
-        <Card className="mb-8">
+      {submissions.map((submission, index) => (
+        <Card key={submission.created_at} className="mb-8">
           <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">Previous Generation</h2>
-            {previousSubmission.ai_image_url && (
+            <h2 className="text-lg font-semibold mb-4">
+              {index === 0 ? "Latest Generation" : `Generation ${submissions.length - index}`}
+            </h2>
+            {submission.ai_image_url && (
               <Dialog>
                 <DialogTrigger asChild>
                   <img
-                    src={previousSubmission.ai_image_url}
-                    alt="Previous generated organism"
+                    src={submission.ai_image_url}
+                    alt={`Generated organism ${submissions.length - index}`}
                     className="w-full h-auto rounded-lg cursor-zoom-in"
                   />
                 </DialogTrigger>
@@ -227,93 +252,48 @@ AI Description: ${submission.ai_description}
                     <span className="sr-only">Close</span>
                   </DialogClose>
                   <img
-                    src={previousSubmission.ai_image_url}
-                    alt="Previous generated organism"
+                    src={submission.ai_image_url}
+                    alt={`Generated organism ${submissions.length - index}`}
                     className="w-full h-auto"
                   />
                 </DialogContent>
               </Dialog>
             )}
-            <p className="mt-4 text-gray-600">{previousSubmission.summary}</p>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="mt-4">
-                  View Details
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Previous Generation Details</SheetTitle>
-                </SheetHeader>
-                {renderSubmissionDetails(previousSubmission)}
-              </SheetContent>
-            </Sheet>
+            <p className="mt-4 text-gray-600">{submission.summary}</p>
           </CardContent>
+          <CardFooter className="flex justify-between pt-6">
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => handleShare(submission)}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+              <Button variant="outline" onClick={() => handleSave(submission)}>
+                <Download className="mr-2 h-4 w-4" />
+                Save
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline">
+                    Details
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Generation Details</SheetTitle>
+                  </SheetHeader>
+                  {renderSubmissionDetails(submission)}
+                </SheetContent>
+              </Sheet>
+              {index === 0 && (
+                <Button onClick={handleRegenerate}>Opnieuw genereren?</Button>
+              )}
+            </div>
+          </CardFooter>
         </Card>
-      )}
-
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="text-lg font-semibold mb-4">
-            {previousSubmission ? "New Generation" : "Generated Image"}
-          </h2>
-          {submission.ai_image_url && (
-            <Dialog>
-              <DialogTrigger asChild>
-                <img
-                  src={submission.ai_image_url}
-                  alt="Generated organism"
-                  className="w-full h-auto rounded-lg cursor-zoom-in"
-                />
-              </DialogTrigger>
-              <DialogContent className="max-w-screen-lg">
-                <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
-                </DialogClose>
-                <img
-                  src={submission.ai_image_url}
-                  alt="Generated organism"
-                  className="w-full h-auto"
-                />
-              </DialogContent>
-            </Dialog>
-          )}
-          <p className="mt-4 text-gray-600">{submission.summary}</p>
-        </CardContent>
-        <CardFooter className="flex justify-between pt-6">
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleShare}>
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
-            <Button variant="outline" onClick={handleSave}>
-              <Download className="mr-2 h-4 w-4" />
-              Save
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">
-                  Details
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Generation Details</SheetTitle>
-                </SheetHeader>
-                {renderSubmissionDetails(submission)}
-              </SheetContent>
-            </Sheet>
-            {!previousSubmission && (
-              <Button onClick={handleRegenerate}>Opnieuw genereren?</Button>
-            )}
-          </div>
-        </CardFooter>
-      </Card>
+      ))}
     </div>
   );
 };
