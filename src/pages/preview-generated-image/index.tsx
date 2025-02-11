@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Share2, Download, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Share2, Download, ChevronDown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Header } from "@/components/Header";
 import {
   Dialog,
   DialogContent,
@@ -168,7 +169,7 @@ AI Description: ${submission.ai_description}
   }
 
   const renderSubmissionDetails = (sub: Submission) => (
-    <div className="space-y-4 text-sm">
+    <div className="space-y-4 text-sm overflow-y-auto max-h-[calc(100vh-10rem)] pr-4">
       <p>
         <strong>Created:</strong> {format(new Date(sub.created_at), "PPpp")}
       </p>
@@ -230,70 +231,75 @@ AI Description: ${submission.ai_description}
   );
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
-      {submissions.map((submission, index) => (
-        <Card key={submission.created_at} className="mb-8">
-          <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">
-              {index === 0 ? "Latest Generation" : `Generation ${submissions.length - index}`}
-            </h2>
-            {submission.ai_image_url && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <img
-                    src={submission.ai_image_url}
-                    alt={`Generated organism ${submissions.length - index}`}
-                    className="w-full h-auto rounded-lg cursor-zoom-in"
-                  />
-                </DialogTrigger>
-                <DialogContent className="max-w-screen-lg">
-                  <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                  </DialogClose>
-                  <img
-                    src={submission.ai_image_url}
-                    alt={`Generated organism ${submissions.length - index}`}
-                    className="w-full h-auto"
-                  />
-                </DialogContent>
-              </Dialog>
-            )}
-            <p className="mt-4 text-gray-600">{submission.summary}</p>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-6">
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => handleShare(submission)}>
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-              <Button variant="outline" onClick={() => handleSave(submission)}>
-                <Download className="mr-2 h-4 w-4" />
-                Save
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline">
-                    Details
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Generation Details</SheetTitle>
-                  </SheetHeader>
-                  {renderSubmissionDetails(submission)}
-                </SheetContent>
-              </Sheet>
-              {index === 0 && (
-                <Button onClick={handleRegenerate}>Opnieuw genereren?</Button>
+    <div className="min-h-screen bg-[#E1E6E0]">
+      <div className="py-8">
+        <Header />
+      </div>
+      <div className="container max-w-4xl mx-auto pb-8 px-4">
+        {submissions.map((submission, index) => (
+          <Card key={submission.created_at} className="mb-8">
+            <CardContent className="pt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                {index === 0 ? "Latest Generation" : `Generation ${submissions.length - index}`}
+              </h2>
+              {submission.ai_image_url && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <img
+                      src={submission.ai_image_url}
+                      alt={`Generated organism ${submissions.length - index}`}
+                      className="w-full h-auto rounded-lg cursor-zoom-in"
+                    />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-screen-lg">
+                    <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </DialogClose>
+                    <img
+                      src={submission.ai_image_url}
+                      alt={`Generated organism ${submissions.length - index}`}
+                      className="w-full h-auto"
+                    />
+                  </DialogContent>
+                </Dialog>
               )}
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+              <p className="mt-4 text-gray-600">{submission.summary}</p>
+            </CardContent>
+            <CardFooter className="flex justify-between pt-6">
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => handleShare(submission)}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </Button>
+                <Button variant="outline" onClick={() => handleSave(submission)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Save
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline">
+                      Details
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Generation Details</SheetTitle>
+                    </SheetHeader>
+                    {renderSubmissionDetails(submission)}
+                  </SheetContent>
+                </Sheet>
+                {index === 0 && submissions.length === 1 && (
+                  <Button onClick={handleRegenerate}>Opnieuw genereren?</Button>
+                )}
+              </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
