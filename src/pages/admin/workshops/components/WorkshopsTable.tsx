@@ -107,15 +107,15 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
   });
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-lg shadow overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Access Code</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="w-1/4">Title</TableHead>
+            <TableHead className="w-1/4">Access Code</TableHead>
+            <TableHead className="w-1/6">Status</TableHead>
+            <TableHead className="w-1/6">Created At</TableHead>
+            <TableHead className="w-1/6">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -128,7 +128,7 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
               <TableRow>
                 <TableCell>
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="p-0 hover:bg-transparent">
+                    <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
                       <span className="mr-2">{workshop.title}</span>
                       {expandedWorkshops.includes(workshop.id) ? (
                         <ChevronUp className="h-4 w-4" />
@@ -174,8 +174,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-              <CollapsibleContent className="px-4 py-4 bg-gray-50">
-                <WorkshopSubmissionsList workshopId={workshop.id} />
+              <CollapsibleContent>
+                <div className="px-4 py-4 bg-gray-50">
+                  <WorkshopSubmissionsList workshopId={workshop.id} />
+                </div>
               </CollapsibleContent>
             </Collapsible>
           ))}
