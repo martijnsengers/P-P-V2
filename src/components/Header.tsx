@@ -11,9 +11,10 @@ export const Header = ({ subtitle }: HeaderProps) => {
       <div className="flex justify-center">
         <Leaf className="h-12 w-12 text-primary" />
       </div>
-      <h1 className="text-4xl font-extrabold text-primary">
-        Planten en Planeten Image Generator
-      </h1>
+      <div className="text-4xl font-extrabold text-primary space-y-2">
+        <div>Planten en Planeten</div>
+        <div>AI Assistent</div>
+      </div>
       {subtitle && (
         <p className="text-base text-muted-foreground">
           {subtitle}
