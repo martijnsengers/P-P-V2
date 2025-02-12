@@ -27,8 +27,16 @@ export default function AdminInit() {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("Failed to create user");
 
-      // The admin entry was already created in the migration,
-      // so we can now sign out and redirect to login
+      // Create the admin record
+      const { error: adminError } = await supabase
+        .from('admins')
+        .insert([
+          { email: email }
+        ]);
+
+      if (adminError) throw adminError;
+
+      // Sign out and redirect to login
       await supabase.auth.signOut();
 
       toast({
