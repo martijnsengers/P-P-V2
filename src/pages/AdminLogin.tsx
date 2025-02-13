@@ -18,12 +18,20 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // Check if the admin exists and verify password
+      // First, get the hashed password
+      const { data: hashedPassword, error: hashError } = await supabase
+        .rpc('hash_password', { password });
+
+      if (hashError) {
+        throw new Error('Password hashing failed');
+      }
+
+      // Then check if the admin exists and verify password
       const { data: admin, error: adminError } = await supabase
         .from('admins')
         .select('*')
         .eq('email', email)
-        .eq('password_hash', supabase.rpc('hash_password', { password }))
+        .eq('password_hash', hashedPassword)
         .maybeSingle();
 
       if (adminError) {
