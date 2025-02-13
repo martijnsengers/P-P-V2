@@ -110,82 +110,87 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[20%] text-left">Title</TableHead>
-            <TableHead className="w-[20%] text-left">Access Code</TableHead>
-            <TableHead className="w-[20%] text-left">Status</TableHead>
-            <TableHead className="w-[20%] text-left">Created At</TableHead>
-            <TableHead className="w-[20%] text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {workshops.map((workshop) => (
-            <Collapsible
-              key={workshop.id}
-              open={expandedWorkshops.includes(workshop.id)}
-              onOpenChange={() => toggleExpand(workshop.id)}
-              className="w-full"
-            >
-              <TableRow className="w-full">
-                <TableCell className="w-[20%]">
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
-                      <span className="mr-2">{workshop.title}</span>
-                      {expandedWorkshops.includes(workshop.id) ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                </TableCell>
-                <TableCell className="w-[20%]">{workshop.access_code}</TableCell>
-                <TableCell className="w-[20%]">
-                  <Button
-                    variant={workshop.status ? "default" : "secondary"}
-                    onClick={() =>
-                      toggleStatus.mutate({
-                        id: workshop.id,
-                        status: !workshop.status,
-                      })
-                    }
-                    disabled={toggleStatus.isPending}
+      <div className="w-full">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[20%] text-left">Title</TableHead>
+              <TableHead className="w-[20%] text-left">Access Code</TableHead>
+              <TableHead className="w-[20%] text-left">Status</TableHead>
+              <TableHead className="w-[20%] text-left">Created At</TableHead>
+              <TableHead className="w-[20%] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="w-full">
+            {workshops.map((workshop) => (
+              <tr key={workshop.id} className="w-full">
+                <td className="p-0" colSpan={5}>
+                  <Collapsible
+                    open={expandedWorkshops.includes(workshop.id)}
+                    onOpenChange={() => toggleExpand(workshop.id)}
+                    className="w-full"
                   >
-                    {workshop.status ? "Active" : "Inactive"}
-                  </Button>
-                </TableCell>
-                <TableCell className="w-[20%]">
-                  {new Date(workshop.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="w-[20%] text-right">
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete this workshop?"
-                        )
-                      ) {
-                        deleteWorkshop.mutate(workshop.id);
-                      }
-                    }}
-                    disabled={deleteWorkshop.isPending}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-              <CollapsibleContent className="w-full">
-                <div className="px-4 py-4 bg-gray-50 w-full">
-                  <WorkshopSubmissionsList workshopId={workshop.id} />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-        </TableBody>
-      </Table>
+                    <div className="w-full flex">
+                      <TableCell className="w-[20%]">
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
+                            <span className="mr-2">{workshop.title}</span>
+                            {expandedWorkshops.includes(workshop.id) ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
+                      </TableCell>
+                      <TableCell className="w-[20%]">{workshop.access_code}</TableCell>
+                      <TableCell className="w-[20%]">
+                        <Button
+                          variant={workshop.status ? "default" : "secondary"}
+                          onClick={() =>
+                            toggleStatus.mutate({
+                              id: workshop.id,
+                              status: !workshop.status,
+                            })
+                          }
+                          disabled={toggleStatus.isPending}
+                        >
+                          {workshop.status ? "Active" : "Inactive"}
+                        </Button>
+                      </TableCell>
+                      <TableCell className="w-[20%]">
+                        {new Date(workshop.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="w-[20%] text-right">
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this workshop?"
+                              )
+                            ) {
+                              deleteWorkshop.mutate(workshop.id);
+                            }
+                          }}
+                          disabled={deleteWorkshop.isPending}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </div>
+                    <CollapsibleContent className="w-full">
+                      <div className="px-4 py-4 bg-gray-50 w-full">
+                        <WorkshopSubmissionsList workshopId={workshop.id} />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </td>
+              </tr>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
