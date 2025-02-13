@@ -18,23 +18,25 @@ export const GeneratedImageCard = ({
   onRegenerate,
 }: GeneratedImageCardProps) => {
   return (
-    <Card className="mb-8">
-      <CardContent className="pt-6">
+    <Card className="flex flex-col h-full overflow-hidden">
+      <CardContent className="p-4 flex-grow">
         {submission.ai_image_url && (
-          <ImageDialog
-            imageUrl={submission.ai_image_url}
-            index={index}
-            totalSubmissions={totalSubmissions}
-          />
+          <div className="aspect-square w-full mb-4 rounded-lg overflow-hidden">
+            <ImageDialog
+              imageUrl={submission.ai_image_url}
+              index={index}
+              totalSubmissions={totalSubmissions}
+            />
+          </div>
         )}
         {submission.latin_name && (
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
             {submission.latin_name}
           </h2>
         )}
-        <p className="mt-4 text-gray-600">{submission.summary}</p>
+        <p className="text-gray-600 line-clamp-3">{submission.summary}</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-4 pt-0">
         <ActionButtons
           submission={submission}
           onRegenerate={onRegenerate}
@@ -44,4 +46,4 @@ export const GeneratedImageCard = ({
       </CardFooter>
     </Card>
   );
-};
+}
