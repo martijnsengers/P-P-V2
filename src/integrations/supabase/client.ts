@@ -25,5 +25,11 @@ export const supabase = createClient<Database>(
 // Update headers when admin status changes
 export const updateSupabaseHeaders = () => {
   const currentAdminEmail = localStorage.getItem('adminEmail');
-  supabase.rest.headers['admin-email'] = currentAdminEmail || 'no-email';
+  supabase.setConfig({
+    global: {
+      headers: {
+        'admin-email': currentAdminEmail || 'no-email'
+      }
+    }
+  });
 };
