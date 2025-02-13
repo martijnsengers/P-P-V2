@@ -23,16 +23,27 @@ export const supabase = createClient<Database>(
 export const updateSupabaseHeaders = () => {
   const adminEmail = localStorage.getItem('adminEmail');
   
-  // Update the client's headers
-  if (adminEmail) {
-    supabase.headers.global.set({
-      'admin-email': adminEmail
-    });
-  } else {
-    supabase.headers.global.set({
-      'admin-email': 'no-email'
-    });
-  }
+  // Update the client's headers using setHeaders method
+  supabase.auth.setSession({
+    access_token: '',
+    refresh_token: ''
+  }).then(() => {
+    if (adminEmail) {
+      supabase.auth.setSession({
+        access_token: '',
+        refresh_token: '',
+      }, {
+        headers: { 'admin-email': adminEmail }
+      });
+    } else {
+      supabase.auth.setSession({
+        access_token: '',
+        refresh_token: '',
+      }, {
+        headers: { 'admin-email': 'no-email' }
+      });
+    }
+  });
 };
 
 // Function to check if user is admin
