@@ -3,17 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneratedImageCard } from "@/pages/preview-generated-image/components/GeneratedImageCard";
 import { Submission } from "@/pages/preview-generated-image/types";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface WorkshopSubmissionsListProps {
   workshopId: string;
 }
 
 export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListProps) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const { data: submissions, isLoading } = useQuery({
     queryKey: ["workshop-submissions", workshopId],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const adminEmail = localStorage.getItem('adminEmail');
+      if (!adminEmail) {
         throw new Error("Not authenticated");
       }
 
@@ -23,8 +28,22 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
         .eq("workshop_id", workshopId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching submissions:", error);
+        throw error;
+      }
       return data as Submission[];
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      if (error.message.includes("Not authenticated")) {
+        localStorage.removeItem('adminEmail');
+        navigate("/admin/login");
+      }
     },
     refetchInterval: 60000, // Polling every minute
   });

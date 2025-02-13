@@ -42,8 +42,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
 
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const adminEmail = localStorage.getItem('adminEmail');
+      if (!adminEmail) {
         throw new Error("Not authenticated");
       }
 
@@ -68,6 +68,7 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         variant: "destructive",
       });
       if (error.message.includes("Not authenticated")) {
+        localStorage.removeItem('adminEmail');
         navigate("/admin/login");
       }
     },
@@ -75,8 +76,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
 
   const deleteWorkshop = useMutation({
     mutationFn: async (id: string) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const adminEmail = localStorage.getItem('adminEmail');
+      if (!adminEmail) {
         throw new Error("Not authenticated");
       }
 
@@ -101,6 +102,7 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         variant: "destructive",
       });
       if (error.message.includes("Not authenticated")) {
+        localStorage.removeItem('adminEmail');
         navigate("/admin/login");
       }
     },
