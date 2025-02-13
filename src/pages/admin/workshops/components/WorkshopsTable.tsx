@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, checkAdminStatus } from "@/integrations/supabase/client";
 import { Workshop } from "../types";
 import { WorkshopSubmissionsList } from "./WorkshopSubmissionsList";
 import {
@@ -40,13 +39,27 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
     );
   };
 
+  const handleAdminError = async (error: Error) => {
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
+      localStorage.removeItem('adminEmail');
+      navigate("/admin/login");
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again as admin",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
-        throw new Error("Not authenticated");
-      }
-
       const { error } = await supabase
         .from("workshops")
         .update({ status })
@@ -61,26 +74,11 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         description: "Workshop status updated",
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      if (error.message.includes("Not authenticated")) {
-        localStorage.removeItem('adminEmail');
-        navigate("/admin/login");
-      }
-    },
+    onError: handleAdminError
   });
 
   const deleteWorkshop = useMutation({
     mutationFn: async (id: string) => {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
-        throw new Error("Not authenticated");
-      }
-
       const { error } = await supabase
         .from("workshops")
         .delete()
@@ -95,17 +93,7 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         description: "Workshop deleted successfully",
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      if (error.message.includes("Not authenticated")) {
-        localStorage.removeItem('adminEmail');
-        navigate("/admin/login");
-      }
-    },
+    onError: handleAdminError
   });
 
   return (

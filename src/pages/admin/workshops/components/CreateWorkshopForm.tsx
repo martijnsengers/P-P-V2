@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, checkAdminStatus } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export function CreateWorkshopForm() {
@@ -14,13 +14,27 @@ export function CreateWorkshopForm() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const handleAdminError = async (error: Error) => {
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
+      localStorage.removeItem('adminEmail');
+      navigate("/admin/login");
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again as admin",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const createWorkshop = useMutation({
     mutationFn: async (title: string) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
-
       const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const { data, error } = await supabase
         .from("workshops")
@@ -39,16 +53,7 @@ export function CreateWorkshopForm() {
         description: "Workshop created successfully",
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      if (error.message.includes("Not authenticated")) {
-        navigate("/admin/login");
-      }
-    },
+    onError: handleAdminError
   });
 
   const handleCreateWorkshop = (e: React.FormEvent) => {

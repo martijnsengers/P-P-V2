@@ -199,6 +199,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      check_admin_access_via_header: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_is_admin: {
         Args: {
           user_email: string
