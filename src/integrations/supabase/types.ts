@@ -192,6 +192,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_is_admin: {
+        Args: {
+          user_email: string
+        }
+        Returns: boolean
+      }
       hash_password: {
         Args: {
           password: string
