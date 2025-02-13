@@ -9,6 +9,25 @@ interface SubmissionDetailsProps {
 export const SubmissionDetails = ({ submission }: SubmissionDetailsProps) => {
   return (
     <div className="space-y-4 text-sm overflow-y-auto max-h-[calc(100vh-10rem)] pr-4">
+      {submission.ai_image_url && (
+        <div className="w-full aspect-square relative rounded-lg overflow-hidden mb-6">
+          <img
+            src={submission.ai_image_url}
+            alt="Generated organism"
+            className="object-cover w-full h-full"
+          />
+        </div>
+      )}
+      {submission.latin_name && (
+        <p>
+          <strong>Latin Name:</strong> {submission.latin_name}
+        </p>
+      )}
+      {submission.summary && (
+        <p>
+          <strong>Summary:</strong> {submission.summary}
+        </p>
+      )}
       <p>
         <strong>Created:</strong> {format(new Date(submission.created_at), "PPpp")}
       </p>
@@ -69,4 +88,3 @@ export const SubmissionDetails = ({ submission }: SubmissionDetailsProps) => {
     </div>
   );
 };
-
