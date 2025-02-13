@@ -19,24 +19,31 @@ export default function AdminLogin() {
 
     try {
       // First sign in the user
-      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) throw signInError;
-      if (!user) throw new Error('Login failed');
+      if (!signInData.user) throw new Error('Login failed');
 
-      // Check if the user is an admin using our security definer function
+      console.log('Auth successful, checking admin status via RPC');
+
+      // Check if the user is an admin using our security definer RPC function
       const { data: isAdmin, error: adminCheckError } = await supabase
         .rpc('check_is_admin', { user_email: email });
 
+      console.log('Admin check result:', { isAdmin, adminCheckError });
+
       if (adminCheckError) {
         console.error('Admin check error:', adminCheckError);
-        throw new Error('Failed to verify admin status');
+        // Sign out if there was an error checking admin status
+        await supabase.auth.signOut();
+        throw new Error(`Failed to verify admin status: ${adminCheckError.message}`);
       }
 
       if (!isAdmin) {
+        // If not an admin, sign out and throw error
         await supabase.auth.signOut();
         throw new Error('Unauthorized access. Only admins can login here.');
       }
@@ -54,7 +61,7 @@ export default function AdminLogin() {
         description: error.message,
         variant: "destructive",
       });
-      // Sign out if there was an error
+      // Ensure user is signed out on any error
       await supabase.auth.signOut();
     } finally {
       setLoading(false);
