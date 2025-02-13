@@ -27,16 +27,16 @@ export default function AdminLogin() {
       if (signInError) throw signInError;
       if (!user) throw new Error('Login failed');
 
-      console.log('Auth successful, checking admin status');
-
       // Check if the user is an admin using our security definer function
       const { data: isAdmin, error: adminCheckError } = await supabase
         .rpc('check_is_admin', { user_email: email });
 
-      if (adminCheckError) throw adminCheckError;
+      if (adminCheckError) {
+        console.error('Admin check error:', adminCheckError);
+        throw new Error('Failed to verify admin status');
+      }
 
       if (!isAdmin) {
-        // If not an admin, sign out and throw error
         await supabase.auth.signOut();
         throw new Error('Unauthorized access. Only admins can login here.');
       }
