@@ -65,35 +65,16 @@ AI Description: ${submission.ai_description}
   return (
     <div className="flex justify-between pt-6">
       <div className="flex gap-2">
-        <Button variant="outline" onClick={handleShare}>
-          <Share2 className="mr-2 h-4 w-4" />
-          Share
+        <Button variant="outline" onClick={handleShare} size="icon">
+          <Share2 className="h-4 w-4" />
         </Button>
-        <Button variant="outline" onClick={handleSave}>
-          <Download className="mr-2 h-4 w-4" />
-          Save
+        <Button variant="outline" onClick={handleSave} size="icon">
+          <Download className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex gap-2">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              Details
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Generation Details</SheetTitle>
-            </SheetHeader>
-            <SubmissionDetails submission={submission} />
-          </SheetContent>
-        </Sheet>
-        {index === 0 && totalSubmissions === 1 && onRegenerate && (
-          <Button onClick={onRegenerate}>Opnieuw genereren?</Button>
-        )}
-      </div>
+      {index === 0 && totalSubmissions === 1 && onRegenerate && (
+        <Button onClick={onRegenerate}>Opnieuw genereren?</Button>
+      )}
     </div>
   );
 };
-
