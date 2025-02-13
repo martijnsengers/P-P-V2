@@ -21,12 +21,11 @@ export default function AdminLogin() {
       // First, get the admin record by email
       const { data: admin, error: adminError } = await supabase
         .from('admins')
-        .select('*')
+        .select('email, password_hash')
         .eq('email', email)
         .single();
 
-      if (adminError) {
-        console.error('Admin error:', adminError);
+      if (adminError || !admin) {
         throw new Error('Invalid email or password');
       }
 
@@ -34,18 +33,28 @@ export default function AdminLogin() {
       const { data: isValid, error: verifyError } = await supabase
         .rpc('verify_password', { 
           input_password: password,
-          hashed_password: admin.password_hash 
+          hashed_password: admin.password_hash
         });
 
       if (verifyError || !isValid) {
-        console.error('Verify error:', verifyError);
         throw new Error('Invalid email or password');
       }
 
+      // If we get here, the login was successful
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
+
+      // Create a session using Supabase Auth
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
 
       navigate('/admin/dashboard');
     } catch (error: any) {
