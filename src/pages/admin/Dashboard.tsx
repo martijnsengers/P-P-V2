@@ -20,7 +20,8 @@ export default function AdminDashboard() {
       const adminEmail = localStorage.getItem('adminEmail');
       
       if (!adminEmail) {
-        navigate('/admin/login');
+        setIsAdmin(false);
+        setLoading(false);
         return;
       }
 
@@ -30,18 +31,25 @@ export default function AdminDashboard() {
         .eq('email', adminEmail)
         .single();
 
-      if (adminError || !adminData) {
+      if (adminError) {
+        console.error('Admin check error:', adminError);
         throw new Error('Unauthorized access');
+      }
+
+      if (!adminData) {
+        throw new Error('Admin not found');
       }
 
       setIsAdmin(true);
     } catch (error) {
+      console.error('Authentication error:', error);
       toast({
         title: "Error",
         description: "Unauthorized access",
         variant: "destructive",
       });
-      navigate('/admin/login');
+      localStorage.removeItem('adminEmail'); // Clear invalid session
+      setIsAdmin(false);
     } finally {
       setLoading(false);
     }
@@ -49,6 +57,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('adminEmail');
+    setIsAdmin(false);
     navigate('/admin/login');
   };
 
