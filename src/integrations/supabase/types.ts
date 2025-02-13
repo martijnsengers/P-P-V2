@@ -217,6 +217,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      verify_password: {
+        Args: {
+          input_password: string
+          hashed_password: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

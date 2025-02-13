@@ -18,29 +18,27 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First, get the hashed password
-      const { data: hashedPassword, error: hashError } = await supabase
-        .rpc('hash_password', { password });
-
-      if (hashError) {
-        console.error('Hash error:', hashError);
-        throw new Error('Password hashing failed');
-      }
-
-      // Then check if the admin exists with matching credentials
+      // First, get the admin record by email
       const { data: admin, error: adminError } = await supabase
         .from('admins')
         .select('*')
         .eq('email', email)
-        .eq('password_hash', hashedPassword)
         .single();
 
       if (adminError) {
         console.error('Admin error:', adminError);
-        throw new Error('Login failed. Please try again.');
+        throw new Error('Invalid email or password');
       }
 
-      if (!admin) {
+      // Then verify the password
+      const { data: isValid, error: verifyError } = await supabase
+        .rpc('verify_password', { 
+          input_password: password,
+          hashed_password: admin.password_hash 
+        });
+
+      if (verifyError || !isValid) {
+        console.error('Verify error:', verifyError);
         throw new Error('Invalid email or password');
       }
 
