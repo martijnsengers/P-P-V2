@@ -47,6 +47,7 @@ export default function AdminInit() {
 
       navigate('/admin/login');
     } catch (error: any) {
+      console.error('Setup error:', error);
       toast({
         title: "Error",
         description: error.message,
