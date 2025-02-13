@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, updateSupabaseHeaders } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -48,6 +48,9 @@ export default function AdminLogin() {
 
       // Store admin session info in localStorage
       localStorage.setItem('adminEmail', email);
+      
+      // Update Supabase headers with new admin email
+      updateSupabaseHeaders();
       
       navigate('/admin/dashboard');
     } catch (error: any) {

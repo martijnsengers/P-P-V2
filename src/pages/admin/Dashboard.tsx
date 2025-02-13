@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, updateSupabaseHeaders } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -48,7 +48,8 @@ export default function AdminDashboard() {
         description: "Unauthorized access",
         variant: "destructive",
       });
-      localStorage.removeItem('adminEmail'); // Clear invalid session
+      localStorage.removeItem('adminEmail');
+      updateSupabaseHeaders(); // Update headers when admin is removed
       setIsAdmin(false);
     } finally {
       setLoading(false);
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('adminEmail');
+    updateSupabaseHeaders(); // Update headers when logging out
     setIsAdmin(false);
     navigate('/admin/login');
   };
