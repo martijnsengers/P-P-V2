@@ -18,18 +18,6 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // First check if any admin exists
-      const { data: existingAdmins, error: checkError } = await supabase
-        .from('admins')
-        .select('id')
-        .limit(1);
-
-      if (checkError) throw checkError;
-      
-      if (existingAdmins && existingAdmins.length > 0) {
-        throw new Error("An admin account already exists. Please use the login page.");
-      }
-
       // Create the auth user
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -39,20 +27,8 @@ export default function AdminInit() {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("Failed to create user");
 
-      // Create the admin record
-      const { error: adminError } = await supabase
-        .from('admins')
-        .insert([
-          { email: email }
-        ]);
-
-      if (adminError) {
-        // If admin creation fails, try to clean up the auth user
-        await supabase.auth.admin.deleteUser(user.id);
-        throw adminError;
-      }
-
-      // Sign out after successful setup
+      // The admin entry was already created in the migration,
+      // so we can now sign out and redirect to login
       await supabase.auth.signOut();
 
       toast({
@@ -67,8 +43,6 @@ export default function AdminInit() {
         description: error.message,
         variant: "destructive",
       });
-      // Ensure user is signed out on any error
-      await supabase.auth.signOut();
     } finally {
       setLoading(false);
     }
