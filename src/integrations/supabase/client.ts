@@ -26,12 +26,19 @@ export const supabase = createClient<Database>(
 export const updateSupabaseHeaders = () => {
   const currentAdminEmail = localStorage.getItem('adminEmail');
   
-  // Update the existing client's headers
-  supabase.setConfig({
-    global: {
-      headers: {
-        'admin-email': currentAdminEmail || 'no-email'
+  // Create a new client with updated headers
+  const newClient = createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: {
+        headers: {
+          'admin-email': currentAdminEmail || 'no-email'
+        }
       }
     }
-  });
+  );
+
+  // Update the existing client's properties
+  Object.assign(supabase, newClient);
 };
