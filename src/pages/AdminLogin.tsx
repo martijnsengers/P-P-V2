@@ -27,23 +27,18 @@ export default function AdminLogin() {
       if (signInError) throw signInError;
       if (!signInData.user) throw new Error('Login failed');
 
-      console.log('Auth successful, checking admin status via RPC');
-
-      // Check if the user is an admin using our security definer RPC function
+      // Check if the user is an admin using our RPC function
       const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('check_is_admin', { user_email: email });
-
-      console.log('Admin check result:', { isAdmin, adminCheckError });
+        .rpc('check_is_admin', {
+          user_email: email
+        });
 
       if (adminCheckError) {
-        console.error('Admin check error:', adminCheckError);
-        // Sign out if there was an error checking admin status
         await supabase.auth.signOut();
         throw new Error(`Failed to verify admin status: ${adminCheckError.message}`);
       }
 
       if (!isAdmin) {
-        // If not an admin, sign out and throw error
         await supabase.auth.signOut();
         throw new Error('Unauthorized access. Only admins can login here.');
       }
@@ -55,13 +50,11 @@ export default function AdminLogin() {
 
       navigate('/admin/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-      // Ensure user is signed out on any error
       await supabase.auth.signOut();
     } finally {
       setLoading(false);
