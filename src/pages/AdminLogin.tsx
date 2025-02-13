@@ -25,14 +25,18 @@ export default function AdminLogin() {
 
       if (error) throw error;
 
-      // Check if the user is an admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', email)
-        .single();
+      // Check if the user is an admin using our RPC function
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('check_is_admin', {
+          user_email: email
+        });
 
-      if (adminError || !adminData) {
+      if (adminCheckError) {
+        await supabase.auth.signOut();
+        throw new Error('Failed to verify admin status');
+      }
+
+      if (!isAdmin) {
         await supabase.auth.signOut();
         throw new Error('Unauthorized access. Only admins can login here.');
       }
