@@ -46,16 +46,9 @@ export default function AdminLogin() {
         description: "Welcome back!",
       });
 
-      // Create a session using Supabase Auth
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (signInError) {
-        throw signInError;
-      }
-
+      // Store admin session info in localStorage
+      localStorage.setItem('adminEmail', email);
+      
       navigate('/admin/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
