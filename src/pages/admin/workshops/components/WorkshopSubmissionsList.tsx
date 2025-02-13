@@ -67,16 +67,18 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-      {submissions.map((submission, index) => (
-        <GeneratedImageCard
-          key={submission.id}
-          submission={submission}
-          index={index}
-          totalSubmissions={submissions.length}
-          onRegenerate={() => {}} // Disabled for admin view
-        />
-      ))}
+    <div className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {submissions.map((submission, index) => (
+          <GeneratedImageCard
+            key={submission.id}
+            submission={submission}
+            index={index}
+            totalSubmissions={submissions.length}
+            onRegenerate={() => {}} // Disabled for admin view
+          />
+        ))}
+      </div>
     </div>
   );
 }
