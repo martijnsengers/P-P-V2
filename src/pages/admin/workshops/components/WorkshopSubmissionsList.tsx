@@ -17,32 +17,34 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
   const { data: submissions, isLoading } = useQuery({
     queryKey: ["workshop-submissions", workshopId],
     queryFn: async () => {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
-        throw new Error("Not authenticated");
-      }
+      try {
+        const adminEmail = localStorage.getItem('adminEmail');
+        if (!adminEmail) {
+          throw new Error("Not authenticated");
+        }
 
-      const { data, error } = await supabase
-        .from("submissions")
-        .select("*")
-        .eq("workshop_id", workshopId)
-        .order("created_at", { ascending: false });
+        const { data, error } = await supabase
+          .from("submissions")
+          .select("*")
+          .eq("workshop_id", workshopId)
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching submissions:", error);
+        if (error) {
+          console.error("Error fetching submissions:", error);
+          throw error;
+        }
+        return data as Submission[];
+      } catch (error: any) {
+        if (error.message.includes("Not authenticated")) {
+          localStorage.removeItem('adminEmail');
+          navigate("/admin/login");
+        }
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
-      }
-      return data as Submission[];
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      if (error.message.includes("Not authenticated")) {
-        localStorage.removeItem('adminEmail');
-        navigate("/admin/login");
       }
     },
     refetchInterval: 60000, // Polling every minute
