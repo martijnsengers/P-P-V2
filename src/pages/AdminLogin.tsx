@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Navigate, useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -18,23 +18,20 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      // Check if the user is an admin
-      const { data: adminData, error: adminError } = await supabase
+      // Check if the admin exists and verify password
+      const { data: admin, error: adminError } = await supabase
         .from('admins')
-        .select()
+        .select('*')
         .eq('email', email)
-        .single();
+        .eq('password_hash', supabase.rpc('hash_password', { password }))
+        .maybeSingle();
 
-      if (adminError || !adminData) {
-        await supabase.auth.signOut();
-        throw new Error('Unauthorized access. Only admins can login here.');
+      if (adminError) {
+        throw new Error('Login failed. Please try again.');
+      }
+
+      if (!admin) {
+        throw new Error('Invalid email or password');
       }
 
       toast({
