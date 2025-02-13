@@ -18,10 +18,10 @@ export const GeneratedImageCard = ({
   onRegenerate,
 }: GeneratedImageCardProps) => {
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
-      <CardContent className="p-4 flex-grow">
+    <Card className="mb-6">
+      <CardContent className="p-6">
         {submission.ai_image_url && (
-          <div className="aspect-square w-full mb-4 rounded-lg overflow-hidden">
+          <div className="w-full">
             <ImageDialog
               imageUrl={submission.ai_image_url}
               index={index}
@@ -30,13 +30,13 @@ export const GeneratedImageCard = ({
           </div>
         )}
         {submission.latin_name && (
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">
             {submission.latin_name}
           </h2>
         )}
-        <p className="text-gray-600 line-clamp-3">{submission.summary}</p>
+        <p className="mt-2 text-gray-600 line-clamp-3">{submission.summary}</p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="px-6 pb-6">
         <ActionButtons
           submission={submission}
           onRegenerate={onRegenerate}
