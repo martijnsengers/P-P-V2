@@ -72,9 +72,25 @@ AI Description: ${submission.ai_description}
           <Download className="h-4 w-4" />
         </Button>
       </div>
-      {index === 0 && totalSubmissions === 1 && onRegenerate && (
-        <Button onClick={onRegenerate}>Opnieuw genereren?</Button>
-      )}
+      <div className="flex gap-2">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline">
+              Details
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Generation Details</SheetTitle>
+            </SheetHeader>
+            <SubmissionDetails submission={submission} />
+          </SheetContent>
+        </Sheet>
+        {index === 0 && totalSubmissions === 1 && onRegenerate && (
+          <Button onClick={onRegenerate}>Opnieuw genereren?</Button>
+        )}
+      </div>
     </div>
   );
 };
