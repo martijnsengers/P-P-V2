@@ -23,18 +23,20 @@ export default function AdminLogin() {
         .rpc('hash_password', { password });
 
       if (hashError) {
+        console.error('Hash error:', hashError);
         throw new Error('Password hashing failed');
       }
 
-      // Then check if the admin exists and verify password
+      // Then check if the admin exists with matching credentials
       const { data: admin, error: adminError } = await supabase
         .from('admins')
         .select('*')
         .eq('email', email)
         .eq('password_hash', hashedPassword)
-        .maybeSingle();
+        .single();
 
       if (adminError) {
+        console.error('Admin error:', adminError);
         throw new Error('Login failed. Please try again.');
       }
 
@@ -49,6 +51,7 @@ export default function AdminLogin() {
 
       navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Error",
         description: error.message,
