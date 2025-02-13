@@ -6,28 +6,28 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://abfrzrhzvfjwwslwawko.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZnJ6cmh6dmZqd3dzbHdhd2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkwMjgxNTksImV4cCI6MjA1NDYwNDE1OX0.pKIzHm2eQac33whKAhzSSWBtRRTgCrTpuKzETjCjvsA";
 
-// Get admin email from localStorage if it exists
-const adminEmail = typeof window !== 'undefined' ? localStorage.getItem('adminEmail') : null;
-
-// Create Supabase client with global headers
-export const supabase = createClient<Database>(
-  SUPABASE_URL, 
-  SUPABASE_PUBLISHABLE_KEY,
-  {
-    global: {
-      headers: {
-        'admin-email': adminEmail || 'no-email'
+// Function to create a Supabase client with the current admin email
+const createSupabaseClient = () => {
+  const adminEmail = typeof window !== 'undefined' ? localStorage.getItem('adminEmail') : null;
+  
+  return createClient<Database>(
+    SUPABASE_URL, 
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: {
+        headers: {
+          'admin-email': adminEmail || 'no-email'
+        }
       }
     }
-  }
-);
+  );
+};
 
-// Update headers when admin status changes
+// Export the initial client
+export let supabase = createSupabaseClient();
+
+// Update client when admin status changes
 export const updateSupabaseHeaders = () => {
-  const currentAdminEmail = localStorage.getItem('adminEmail');
-  
-  // Update the client's headers
-  supabase.headers.global.set({
-    'admin-email': currentAdminEmail || 'no-email'
-  });
+  // Create a new client instance with updated headers
+  supabase = createSupabaseClient();
 };
