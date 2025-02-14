@@ -45,9 +45,9 @@ export default function WorkshopsPage() {
     checkAuth();
   }, [checkAuth]);
 
-  const { data: workshops, isLoading, error } = useQuery({
+  const { data: workshops, isLoading } = useQuery({
     queryKey: ["workshops"],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const isAuthorized = await checkAuth();
       if (!isAuthorized) {
         throw new Error('Not authorized');
@@ -60,20 +60,17 @@ export default function WorkshopsPage() {
 
       if (error) {
         console.error('Workshops fetch error:', error);
-        throw error;
+        toast({
+          title: "Error",
+          description: "Failed to fetch workshops",
+          variant: "destructive",
+        });
+        return [];
       }
 
       return data as Workshop[];
     },
-    retry: false,
-    onError: (error: any) => {
-      console.error('Query error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch workshops",
-        variant: "destructive",
-      });
-    }
+    retry: false
   });
 
   if (isLoading) {
