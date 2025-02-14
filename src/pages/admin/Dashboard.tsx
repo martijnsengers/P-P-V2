@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase, updateSupabaseHeaders } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -17,49 +17,38 @@ export default function AdminDashboard() {
 
   const checkAdmin = async () => {
     try {
-      const adminEmail = localStorage.getItem('adminEmail');
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!adminEmail) {
-        setIsAdmin(false);
-        setLoading(false);
+      if (!user) {
+        navigate('/admin/login');
         return;
       }
 
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select()
-        .eq('email', adminEmail)
+        .eq('email', user.email)
         .single();
 
-      if (adminError) {
-        console.error('Admin check error:', adminError);
+      if (adminError || !adminData) {
         throw new Error('Unauthorized access');
-      }
-
-      if (!adminData) {
-        throw new Error('Admin not found');
       }
 
       setIsAdmin(true);
     } catch (error) {
-      console.error('Authentication error:', error);
       toast({
         title: "Error",
         description: "Unauthorized access",
         variant: "destructive",
       });
-      localStorage.removeItem('adminEmail');
-      updateSupabaseHeaders(); // Update headers when admin is removed
-      setIsAdmin(false);
+      navigate('/admin/login');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminEmail');
-    updateSupabaseHeaders(); // Update headers when logging out
-    setIsAdmin(false);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/admin/login');
   };
 

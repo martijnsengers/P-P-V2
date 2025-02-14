@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase, checkAdminStatus } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Workshop } from "../types";
 import { WorkshopSubmissionsList } from "./WorkshopSubmissionsList";
 import {
@@ -39,27 +40,13 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
     );
   };
 
-  const handleAdminError = async (error: Error) => {
-    const isAdmin = await checkAdminStatus();
-    if (!isAdmin) {
-      localStorage.removeItem('adminEmail');
-      navigate("/admin/login");
-      toast({
-        title: "Authentication Error",
-        description: "Please log in again as admin",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const { error } = await supabase
         .from("workshops")
         .update({ status })
@@ -74,11 +61,25 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         description: "Workshop status updated",
       });
     },
-    onError: handleAdminError
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      if (error.message.includes("Not authenticated")) {
+        navigate("/admin/login");
+      }
+    },
   });
 
   const deleteWorkshop = useMutation({
     mutationFn: async (id: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
       const { error } = await supabase
         .from("workshops")
         .delete()
@@ -93,92 +94,95 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         description: "Workshop deleted successfully",
       });
     },
-    onError: handleAdminError
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      if (error.message.includes("Not authenticated")) {
+        navigate("/admin/login");
+      }
+    },
   });
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="w-full">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[20%] text-left">Title</TableHead>
-              <TableHead className="w-[20%] text-left">Access Code</TableHead>
-              <TableHead className="w-[20%] text-left">Status</TableHead>
-              <TableHead className="w-[20%] text-left">Created At</TableHead>
-              <TableHead className="w-[20%] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className="w-full">
-            {workshops.map((workshop) => (
-              <tr key={workshop.id} className="w-full">
-                <td className="p-0" colSpan={5}>
-                  <Collapsible
-                    open={expandedWorkshops.includes(workshop.id)}
-                    onOpenChange={() => toggleExpand(workshop.id)}
-                    className="w-full"
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[30%] text-left">Title</TableHead>
+            <TableHead className="w-[25%] text-left">Access Code</TableHead>
+            <TableHead className="w-[15%] text-left">Status</TableHead>
+            <TableHead className="w-[15%] text-left">Created At</TableHead>
+            <TableHead className="w-[15%] text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {workshops.map((workshop) => (
+            <Collapsible
+              key={workshop.id}
+              open={expandedWorkshops.includes(workshop.id)}
+              onOpenChange={() => toggleExpand(workshop.id)}
+            >
+              <TableRow>
+                <TableCell className="w-[30%]">
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
+                      <span className="mr-2">{workshop.title}</span>
+                      {expandedWorkshops.includes(workshop.id) ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                </TableCell>
+                <TableCell className="w-[25%]">{workshop.access_code}</TableCell>
+                <TableCell className="w-[15%]">
+                  <Button
+                    variant={workshop.status ? "default" : "secondary"}
+                    onClick={() =>
+                      toggleStatus.mutate({
+                        id: workshop.id,
+                        status: !workshop.status,
+                      })
+                    }
+                    disabled={toggleStatus.isPending}
                   >
-                    <div className="w-full flex">
-                      <TableCell className="w-[20%]">
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
-                            <span className="mr-2">{workshop.title}</span>
-                            {expandedWorkshops.includes(workshop.id) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </CollapsibleTrigger>
-                      </TableCell>
-                      <TableCell className="w-[20%]">{workshop.access_code}</TableCell>
-                      <TableCell className="w-[20%]">
-                        <Button
-                          variant={workshop.status ? "default" : "secondary"}
-                          onClick={() =>
-                            toggleStatus.mutate({
-                              id: workshop.id,
-                              status: !workshop.status,
-                            })
-                          }
-                          disabled={toggleStatus.isPending}
-                        >
-                          {workshop.status ? "Active" : "Inactive"}
-                        </Button>
-                      </TableCell>
-                      <TableCell className="w-[20%]">
-                        {new Date(workshop.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="w-[20%] text-right">
-                        <Button
-                          variant="destructive"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to delete this workshop?"
-                              )
-                            ) {
-                              deleteWorkshop.mutate(workshop.id);
-                            }
-                          }}
-                          disabled={deleteWorkshop.isPending}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </div>
-                    <CollapsibleContent className="w-full">
-                      <div className="px-4 py-4 bg-gray-50 w-full">
-                        <WorkshopSubmissionsList workshopId={workshop.id} />
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </td>
-              </tr>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                    {workshop.status ? "Active" : "Inactive"}
+                  </Button>
+                </TableCell>
+                <TableCell className="w-[15%]">
+                  {new Date(workshop.created_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell className="w-[15%] text-right">
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete this workshop?"
+                        )
+                      ) {
+                        deleteWorkshop.mutate(workshop.id);
+                      }
+                    }}
+                    disabled={deleteWorkshop.isPending}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+              <CollapsibleContent>
+                <div className="px-4 py-4 bg-gray-50">
+                  <WorkshopSubmissionsList workshopId={workshop.id} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

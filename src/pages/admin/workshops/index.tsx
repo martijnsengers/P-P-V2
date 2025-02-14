@@ -1,70 +1,34 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateWorkshopForm } from "./components/CreateWorkshopForm";
 import { WorkshopsTable } from "./components/WorkshopsTable";
-import { useToast } from "@/hooks/use-toast";
 import type { Workshop } from "./types";
 
 export default function WorkshopsPage() {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
+  // Check authentication
   useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
-    try {
-      const adminEmail = localStorage.getItem('adminEmail');
-      
-      if (!adminEmail) {
-        setIsAdmin(false);
-        setLoading(false);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/admin/login");
         return;
       }
+    };
+    checkAuth();
+  }, [navigate]);
 
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', adminEmail)
-        .single();
-
-      if (adminError) {
-        console.error('Admin check error:', adminError);
-        throw new Error('Unauthorized access');
-      }
-
-      if (!adminData) {
-        throw new Error('Admin not found');
-      }
-
-      setIsAdmin(true);
-    } catch (error) {
-      console.error('Authentication error:', error);
-      toast({
-        title: "Error",
-        description: "Unauthorized access",
-        variant: "destructive",
-      });
-      localStorage.removeItem('adminEmail'); // Clear invalid session
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch workshops using our custom admin auth
-  const { data: workshops, isLoading: isLoadingWorkshops } = useQuery({
+  // Fetch workshops
+  const { data: workshops, isLoading } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         throw new Error("Not authenticated");
       }
 
@@ -76,20 +40,14 @@ export default function WorkshopsPage() {
       if (error) throw error;
       return data as Workshop[];
     },
-    enabled: isAdmin, // Only run query when admin is authenticated
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">Loading...</div>
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    navigate("/admin/login");
-    return null;
   }
 
   return (
@@ -102,14 +60,8 @@ export default function WorkshopsPage() {
           </Button>
         </div>
 
-        {isLoadingWorkshops ? (
-          <div>Loading workshops...</div>
-        ) : (
-          <>
-            <CreateWorkshopForm />
-            <WorkshopsTable workshops={workshops || []} />
-          </>
-        )}
+        <CreateWorkshopForm />
+        <WorkshopsTable workshops={workshops || []} />
       </div>
     </div>
   );

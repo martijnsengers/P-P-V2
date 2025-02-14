@@ -65,11 +65,13 @@ AI Description: ${submission.ai_description}
   return (
     <div className="flex justify-between pt-6">
       <div className="flex gap-2">
-        <Button variant="outline" onClick={handleShare} size="icon">
-          <Share2 className="h-4 w-4" />
+        <Button variant="outline" onClick={handleShare}>
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
         </Button>
-        <Button variant="outline" onClick={handleSave} size="icon">
-          <Download className="h-4 w-4" />
+        <Button variant="outline" onClick={handleSave}>
+          <Download className="mr-2 h-4 w-4" />
+          Save
         </Button>
       </div>
       <div className="flex gap-2">
@@ -94,3 +96,4 @@ AI Description: ${submission.ai_description}
     </div>
   );
 };
+

@@ -18,27 +18,18 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      // First, hash the password
-      const { data: hashedPassword, error: hashError } = await supabase
-        .rpc('hash_password', { password });
+      // Create the auth user
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-      if (hashError) {
-        throw new Error('Password hashing failed');
-      }
+      if (signUpError) throw signUpError;
+      if (!user) throw new Error("Failed to create user");
 
-      // Create the admin entry
-      const { error: adminError } = await supabase
-        .from('admins')
-        .insert([
-          {
-            email,
-            password_hash: hashedPassword
-          }
-        ]);
-
-      if (adminError) {
-        throw adminError;
-      }
+      // The admin entry was already created in the migration,
+      // so we can now sign out and redirect to login
+      await supabase.auth.signOut();
 
       toast({
         title: "Admin setup complete",
@@ -47,7 +38,6 @@ export default function AdminInit() {
 
       navigate('/admin/login');
     } catch (error: any) {
-      console.error('Setup error:', error);
       toast({
         title: "Error",
         description: error.message,

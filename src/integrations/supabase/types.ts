@@ -14,19 +14,16 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          password_hash: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
-          password_hash?: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
-          password_hash?: string
         }
         Relationships: []
       }
@@ -195,20 +192,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_admin_access: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      check_admin_access_via_header: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      check_is_admin: {
-        Args: {
-          user_email: string
-        }
-        Returns: boolean
-      }
       hash_password: {
         Args: {
           password: string
@@ -218,13 +201,6 @@ export type Database = {
       is_admin: {
         Args: {
           user_email: string
-        }
-        Returns: boolean
-      }
-      verify_password: {
-        Args: {
-          input_password: string
-          hashed_password: string
         }
         Returns: boolean
       }

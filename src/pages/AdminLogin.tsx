@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase, updateSupabaseHeaders } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -18,43 +18,32 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First, get the admin record by email
-      const { data: admin, error: adminError } = await supabase
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // Check if the user is an admin
+      const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select('email, password_hash')
+        .select()
         .eq('email', email)
         .single();
 
-      if (adminError || !admin) {
-        throw new Error('Invalid email or password');
+      if (adminError || !adminData) {
+        await supabase.auth.signOut();
+        throw new Error('Unauthorized access. Only admins can login here.');
       }
 
-      // Then verify the password
-      const { data: isValid, error: verifyError } = await supabase
-        .rpc('verify_password', { 
-          input_password: password,
-          hashed_password: admin.password_hash
-        });
-
-      if (verifyError || !isValid) {
-        throw new Error('Invalid email or password');
-      }
-
-      // If we get here, the login was successful
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
 
-      // Store admin session info in localStorage
-      localStorage.setItem('adminEmail', email);
-      
-      // Update Supabase headers with new admin email
-      updateSupabaseHeaders();
-      
       navigate('/admin/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
       toast({
         title: "Error",
         description: error.message,
