@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -13,37 +13,35 @@ export default function WorkshopsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check authentication and admin status
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          navigate("/admin/login");
-          return;
-        }
-
-        // Use the new is_admin_user function
-        const { data: isAdmin, error: adminError } = await supabase
-          .rpc('is_admin_user');
-
-        if (adminError || !isAdmin) {
-          throw new Error('Unauthorized access');
-        }
-      } catch (error: any) {
-        console.error('Auth check error:', error);
-        toast({
-          title: "Error",
-          description: "You don't have permission to access this page",
-          variant: "destructive",
-        });
+  const checkAuth = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         navigate("/admin/login");
+        return;
       }
-    };
-    checkAuth();
+
+      const { data: isAdmin, error: adminError } = await supabase
+        .rpc('is_admin');
+
+      if (adminError || !isAdmin) {
+        throw new Error('Unauthorized access');
+      }
+    } catch (error: any) {
+      console.error('Auth check error:', error);
+      toast({
+        title: "Error",
+        description: "You don't have permission to access this page",
+        variant: "destructive",
+      });
+      navigate("/admin/login");
+    }
   }, [navigate, toast]);
 
-  // Fetch workshops with error handling
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   const { data: workshops, isLoading, error } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
@@ -59,16 +57,14 @@ export default function WorkshopsPage() {
 
       return data as Workshop[];
     },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to load workshops",
+        variant: "destructive",
+      });
+    }
   });
-
-  // Handle query error
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load workshops",
-      variant: "destructive",
-    });
-  }
 
   if (isLoading) {
     return (

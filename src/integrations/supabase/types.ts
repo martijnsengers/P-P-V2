@@ -223,12 +223,17 @@ export type Database = {
         }
         Returns: string
       }
-      is_admin: {
-        Args: {
-          user_email: string
-        }
-        Returns: boolean
-      }
+      is_admin:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: boolean
+          }
+        | {
+            Args: {
+              user_email: string
+            }
+            Returns: boolean
+          }
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
