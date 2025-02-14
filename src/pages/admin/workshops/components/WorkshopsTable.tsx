@@ -110,12 +110,12 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
     <div className="bg-white rounded-lg shadow overflow-hidden w-full">
       <Table>
         <TableHeader>
-          <TableRow className="w-full">
-            <TableHead className="w-[20%]">Title</TableHead>
-            <TableHead className="w-[20%]">Access Code</TableHead>
-            <TableHead className="w-[20%]">Status</TableHead>
-            <TableHead className="w-[20%]">Created At</TableHead>
-            <TableHead className="w-[20%] text-right">Actions</TableHead>
+          <TableRow>
+            <TableHead className="w-1/5">Title</TableHead>
+            <TableHead className="w-1/5">Access Code</TableHead>
+            <TableHead className="w-1/5">Status</TableHead>
+            <TableHead className="w-1/5">Created At</TableHead>
+            <TableHead className="w-1/5 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -127,7 +127,7 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
               className="w-full"
             >
               <TableRow className="w-full">
-                <TableCell className="w-[20%]">
+                <TableCell className="w-1/5">
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
                       <span className="mr-2">{workshop.title}</span>
@@ -139,8 +139,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     </Button>
                   </CollapsibleTrigger>
                 </TableCell>
-                <TableCell className="w-[20%]">{workshop.access_code}</TableCell>
-                <TableCell className="w-[20%]">
+                <TableCell className="w-1/5">{workshop.access_code}</TableCell>
+                <TableCell className="w-1/5">
                   <Button
                     variant={workshop.status ? "default" : "secondary"}
                     onClick={() =>
@@ -154,10 +154,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     {workshop.status ? "Active" : "Inactive"}
                   </Button>
                 </TableCell>
-                <TableCell className="w-[20%]">
+                <TableCell className="w-1/5">
                   {new Date(workshop.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="w-[20%] text-right">
+                <TableCell className="w-1/5 text-right">
                   <Button
                     variant="destructive"
                     onClick={() => {
