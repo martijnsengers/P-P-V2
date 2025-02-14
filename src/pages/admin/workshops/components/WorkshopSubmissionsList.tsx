@@ -37,8 +37,11 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
     );
   }
 
+  // More strict filtering to ensure we only show submissions with valid image URLs
   const submissionsWithImages = submissions?.filter(
-    submission => submission.ai_image_url || submission.url_original_image
+    submission => 
+      (submission.ai_image_url && submission.ai_image_url.trim() !== '') || 
+      (submission.url_original_image && submission.url_original_image.trim() !== '')
   );
 
   if (!submissionsWithImages?.length) {
