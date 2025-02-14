@@ -18,15 +18,17 @@ export default function WorkshopsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate("/admin/login");
-        return;
+        return false;
       }
 
       const { data: isAdmin, error: adminError } = await supabase
-        .rpc('is_admin');
+        .rpc('check_admin_status');
 
       if (adminError || !isAdmin) {
         throw new Error('Unauthorized access');
       }
+
+      return true;
     } catch (error: any) {
       console.error('Auth check error:', error);
       toast({
@@ -35,6 +37,7 @@ export default function WorkshopsPage() {
         variant: "destructive",
       });
       navigate("/admin/login");
+      return false;
     }
   }, [navigate, toast]);
 
@@ -42,9 +45,14 @@ export default function WorkshopsPage() {
     checkAuth();
   }, [checkAuth]);
 
-  const { data: workshops, isLoading } = useQuery({
+  const { data: workshops, isLoading, error } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
+      const isAuthorized = await checkAuth();
+      if (!isAuthorized) {
+        throw new Error('Not authorized');
+      }
+
       const { data, error } = await supabase
         .from("workshops")
         .select("*")
@@ -52,15 +60,19 @@ export default function WorkshopsPage() {
 
       if (error) {
         console.error('Workshops fetch error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch workshops",
-          variant: "destructive",
-        });
-        return [];
+        throw error;
       }
 
       return data as Workshop[];
+    },
+    retry: false,
+    onError: (error: any) => {
+      console.error('Query error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch workshops",
+        variant: "destructive",
+      });
     }
   });
 
