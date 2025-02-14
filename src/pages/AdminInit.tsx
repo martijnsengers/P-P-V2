@@ -19,23 +19,32 @@ export default function AdminInit() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: isAdmin } = await supabase.rpc('is_admin_user');
-        if (!isAdmin) {
-          // For first admin creation, we don't redirect non-admins
-          const { count } = await supabase
-            .from('admins')
-            .select('*', { count: 'exact', head: true });
-          
-          if (count && count > 0) {
-            toast({
-              title: "Unauthorized",
-              description: "You must be an admin to create new admin users.",
-              variant: "destructive",
-            });
-            navigate('/admin/login');
-          }
+        const { data: isAdmin, error: adminCheckError } = await supabase.rpc('is_admin_user');
+        
+        if (adminCheckError) {
+          console.error("Admin check error:", adminCheckError);
+          toast({
+            title: "Error",
+            description: "Failed to verify admin status",
+            variant: "destructive",
+          });
+          navigate('/admin/login');
+          return;
         }
+
+        if (!isAdmin) {
+          toast({
+            title: "Unauthorized",
+            description: "You must be an admin to access this page.",
+            variant: "destructive",
+          });
+          navigate('/admin/login');
+          return;
+        }
+
         setCurrentUser(session.user.email || null);
+      } else {
+        navigate('/admin/login');
       }
     };
     checkAuth();
@@ -46,6 +55,10 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
+      if (!currentUser) {
+        throw new Error("You must be logged in as an admin to create new admins");
+      }
+
       // First create the auth user
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email: newAdminEmail,
@@ -55,52 +68,21 @@ export default function AdminInit() {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("Failed to create user");
 
-      // Check if this is the first admin
-      const { count } = await supabase
-        .from('admins')
-        .select('*', { count: 'exact', head: true });
-
-      let success;
-      if (!count || count === 0) {
-        // Create first admin using the security definer function
-        const { data: created, error: firstAdminError } = await supabase
-          .rpc('create_first_admin', {
-            admin_email: newAdminEmail
-          });
-        
-        if (firstAdminError) {
-          console.error("First admin creation error:", firstAdminError);
-          throw firstAdminError;
-        }
-        
-        success = created;
-      } else {
-        // Create subsequent admin using the other function
-        const { data: created, error: adminError } = await supabase
-          .rpc('create_admin', {
-            admin_email: newAdminEmail,
-            creator_email: currentUser
-          });
-        
-        if (adminError) {
-          console.error("Admin creation error:", adminError);
-          throw adminError;
-        }
-        
-        success = created;
+      // Create admin using the admin creation function
+      const { data: created, error: adminError } = await supabase
+        .rpc('create_admin', {
+          admin_email: newAdminEmail,
+          creator_email: currentUser
+        });
+      
+      if (adminError) {
+        console.error("Admin creation error:", adminError);
+        throw adminError;
       }
-
-      if (!success) {
+      
+      if (!created) {
         throw new Error("Failed to create admin record");
       }
-
-      // Sign in the user immediately after creation
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: newAdminEmail,
-        password: newAdminPassword,
-      });
-
-      if (signInError) throw signInError;
 
       toast({
         title: "Success",
