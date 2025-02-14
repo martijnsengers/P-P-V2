@@ -18,19 +18,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // Check if the user is an admin first using our security definer function
-      const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('check_is_admin', { user_email: email });
-
-      if (adminCheckError) {
-        throw adminCheckError;
-      }
-
-      if (!isAdmin) {
-        throw new Error('Unauthorized access. Only admins can login here.');
-      }
-
-      // Then authenticate with Supabase Auth
+      // First authenticate with Supabase Auth
       const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -42,6 +30,22 @@ export default function AdminLogin() {
 
       if (!user) {
         throw new Error('Authentication failed');
+      }
+
+      // Then check if the user is an admin using our security definer function
+      const { data: isAdmin, error: adminCheckError } = await supabase
+        .rpc('check_is_admin', { user_email: email });
+
+      if (adminCheckError) {
+        // If admin check fails, sign out and throw error
+        await supabase.auth.signOut();
+        throw adminCheckError;
+      }
+
+      if (!isAdmin) {
+        // If not an admin, sign out and throw error
+        await supabase.auth.signOut();
+        throw new Error('Unauthorized access. Only admins can login here.');
       }
 
       toast({
