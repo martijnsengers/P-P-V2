@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function LoadingQuestionsPage() {
   const [error, setError] = useState<string | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState<string>("Interessant. Laat me dit eens goed analyseren. Een moment geduld.");
   const location = useLocation();
   const navigate = useNavigate();
   const { submissionId, userId } = location.state || {};
@@ -20,7 +21,7 @@ export default function LoadingQuestionsPage() {
       try {
         const { data, error: submissionError } = await supabase
           .from("submissions")
-          .select("feedback_vraag1, feedback_vraag2")
+          .select("feedback_vraag1, feedback_vraag2, type_organisme")
           .eq("id", submissionId)
           .single();
 
@@ -55,9 +56,27 @@ export default function LoadingQuestionsPage() {
       clearInterval(interval);
     }, 60000);
 
+    // Set new loading message after 15 seconds
+    const messageTimeout = setTimeout(async () => {
+      try {
+        const { data } = await supabase
+          .from("submissions")
+          .select("type_organisme")
+          .eq("id", submissionId)
+          .single();
+        
+        if (data?.type_organisme) {
+          setLoadingMessage(`Analyseren van de structuur van ${data.type_organisme}`);
+        }
+      } catch (error) {
+        console.error("Error fetching organism type:", error);
+      }
+    }, 15000);
+
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
+      clearTimeout(messageTimeout);
     };
   }, [submissionId, userId, navigate]);
 
@@ -70,7 +89,7 @@ export default function LoadingQuestionsPage() {
         ) : (
           <>
             <p className="text-muted-foreground">
-              Interessant. Laat me dit eens goed analyseren. Een moment geduld.
+              {loadingMessage}
             </p>
             <div className="flex justify-center">
               <Loader className="h-8 w-8 animate-spin text-primary" />
