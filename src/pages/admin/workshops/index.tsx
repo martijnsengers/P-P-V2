@@ -57,14 +57,19 @@ export default function WorkshopsPage() {
 
       return data as Workshop[];
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: "Failed to load workshops",
-        variant: "destructive",
-      });
+    meta: {
+      errorMessage: "Failed to load workshops"
     }
   });
+
+  // Handle query error outside of the query configuration
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load workshops",
+      variant: "destructive",
+    });
+  }
 
   if (isLoading) {
     return (
