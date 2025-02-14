@@ -22,7 +22,7 @@ export default function WorkshopsPage() {
       }
 
       const { data: isAdmin, error: adminError } = await supabase
-        .rpc('check_admin_status');
+        .rpc('is_admin_user');
 
       if (adminError || !isAdmin) {
         throw new Error('Unauthorized access');

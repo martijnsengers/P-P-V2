@@ -203,10 +203,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      check_admin_status: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       check_is_admin: {
         Args: {
           user_email: string
