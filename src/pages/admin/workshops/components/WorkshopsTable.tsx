@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -119,66 +120,70 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
         </TableHeader>
         <TableBody>
           {workshops.map((workshop) => (
-            <Collapsible
-              key={workshop.id}
-              open={expandedWorkshops.includes(workshop.id)}
-              onOpenChange={() => toggleExpand(workshop.id)}
-            >
-              <TableRow>
-                <TableCell style={{ width: '20%' }}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
-                      <span className="mr-2">{workshop.title}</span>
-                      {expandedWorkshops.includes(workshop.id) ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                </TableCell>
-                <TableCell style={{ width: '20%' }}>{workshop.access_code}</TableCell>
-                <TableCell style={{ width: '20%' }}>
-                  <Button
-                    variant={workshop.status ? "default" : "secondary"}
-                    onClick={() =>
-                      toggleStatus.mutate({
-                        id: workshop.id,
-                        status: !workshop.status,
-                      })
-                    }
-                    disabled={toggleStatus.isPending}
-                  >
-                    {workshop.status ? "Active" : "Inactive"}
-                  </Button>
-                </TableCell>
-                <TableCell style={{ width: '20%' }}>
-                  {new Date(workshop.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell style={{ width: '20%' }} className="text-right">
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete this workshop?"
-                        )
-                      ) {
-                        deleteWorkshop.mutate(workshop.id);
-                      }
-                    }}
-                    disabled={deleteWorkshop.isPending}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-              <CollapsibleContent>
-                <div className="px-4 py-4 bg-gray-50">
-                  <WorkshopSubmissionsList workshopId={workshop.id} />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+            <tr key={workshop.id} className="group">
+              <td colSpan={5} className="p-0">
+                <Collapsible
+                  open={expandedWorkshops.includes(workshop.id)}
+                  onOpenChange={() => toggleExpand(workshop.id)}
+                  className="w-full"
+                >
+                  <div className="w-full grid grid-cols-5 px-4 py-4">
+                    <div className="col-span-1">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
+                          <span className="mr-2">{workshop.title}</span>
+                          {expandedWorkshops.includes(workshop.id) ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <div className="col-span-1">{workshop.access_code}</div>
+                    <div className="col-span-1">
+                      <Button
+                        variant={workshop.status ? "default" : "secondary"}
+                        onClick={() =>
+                          toggleStatus.mutate({
+                            id: workshop.id,
+                            status: !workshop.status,
+                          })
+                        }
+                        disabled={toggleStatus.isPending}
+                      >
+                        {workshop.status ? "Active" : "Inactive"}
+                      </Button>
+                    </div>
+                    <div className="col-span-1">
+                      {new Date(workshop.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this workshop?"
+                            )
+                          ) {
+                            deleteWorkshop.mutate(workshop.id);
+                          }
+                        }}
+                        disabled={deleteWorkshop.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                  <CollapsibleContent className="w-full border-t">
+                    <div className="px-4 py-4 bg-gray-50 w-full">
+                      <WorkshopSubmissionsList workshopId={workshop.id} />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </td>
+            </tr>
           ))}
         </TableBody>
       </Table>
