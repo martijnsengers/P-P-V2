@@ -42,7 +42,7 @@ export default function WorkshopsPage() {
     checkAuth();
   }, [checkAuth]);
 
-  const { data: workshops, isLoading, error } = useQuery({
+  const { data: workshops, isLoading } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,24 +52,17 @@ export default function WorkshopsPage() {
 
       if (error) {
         console.error('Workshops fetch error:', error);
-        throw new Error("Failed to fetch workshops");
+        toast({
+          title: "Error",
+          description: "Failed to fetch workshops",
+          variant: "destructive",
+        });
+        return [];
       }
 
       return data as Workshop[];
-    },
-    meta: {
-      errorMessage: "Failed to load workshops"
     }
   });
-
-  // Handle query error outside of the query configuration
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load workshops",
-      variant: "destructive",
-    });
-  }
 
   if (isLoading) {
     return (
