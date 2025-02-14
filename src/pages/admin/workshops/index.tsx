@@ -6,32 +6,46 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateWorkshopForm } from "./components/CreateWorkshopForm";
 import { WorkshopsTable } from "./components/WorkshopsTable";
+import { useToast } from "@/hooks/use-toast";
 import type { Workshop } from "./types";
 
 export default function WorkshopsPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Check authentication
+  // Check authentication and admin status
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/admin/login");
+          return;
+        }
+
+        // Verify admin access
+        const { data: isAdmin, error: adminError } = await supabase
+          .rpc('check_admin_access');
+
+        if (adminError || !isAdmin) {
+          throw new Error('Unauthorized access');
+        }
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
         navigate("/admin/login");
-        return;
       }
     };
     checkAuth();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   // Fetch workshops
   const { data: workshops, isLoading } = useQuery({
     queryKey: ["workshops"],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
-
       const { data, error } = await supabase
         .from("workshops")
         .select("*")
