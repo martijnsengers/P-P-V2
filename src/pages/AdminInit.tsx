@@ -63,24 +63,44 @@ export default function AdminInit() {
       let success;
       if (!count || count === 0) {
         // Create first admin using the security definer function
-        const { data: created } = await supabase
+        const { data: created, error: firstAdminError } = await supabase
           .rpc('create_first_admin', {
             admin_email: newAdminEmail
           });
+        
+        if (firstAdminError) {
+          console.error("First admin creation error:", firstAdminError);
+          throw firstAdminError;
+        }
+        
         success = created;
       } else {
         // Create subsequent admin using the other function
-        const { data: created } = await supabase
+        const { data: created, error: adminError } = await supabase
           .rpc('create_admin', {
             admin_email: newAdminEmail,
             creator_email: currentUser
           });
+        
+        if (adminError) {
+          console.error("Admin creation error:", adminError);
+          throw adminError;
+        }
+        
         success = created;
       }
 
       if (!success) {
         throw new Error("Failed to create admin record");
       }
+
+      // Sign in the user immediately after creation
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: newAdminEmail,
+        password: newAdminPassword,
+      });
+
+      if (signInError) throw signInError;
 
       toast({
         title: "Success",
@@ -90,7 +110,11 @@ export default function AdminInit() {
       // Clear the form
       setNewAdminEmail("");
       setNewAdminPassword("");
+      
+      // Redirect to dashboard
+      navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error("Full error:", error);
       toast({
         title: "Error",
         description: error.message,
