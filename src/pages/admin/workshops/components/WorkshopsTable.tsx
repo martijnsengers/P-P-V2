@@ -107,15 +107,15 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
   });
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-lg shadow overflow-hidden w-full">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-[30%] text-left">Title</TableHead>
-            <TableHead className="w-[25%] text-left">Access Code</TableHead>
-            <TableHead className="w-[15%] text-left">Status</TableHead>
-            <TableHead className="w-[15%] text-left">Created At</TableHead>
-            <TableHead className="w-[15%] text-right">Actions</TableHead>
+          <TableRow className="w-full">
+            <TableHead className="w-[20%]">Title</TableHead>
+            <TableHead className="w-[20%]">Access Code</TableHead>
+            <TableHead className="w-[20%]">Status</TableHead>
+            <TableHead className="w-[20%]">Created At</TableHead>
+            <TableHead className="w-[20%] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -124,9 +124,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
               key={workshop.id}
               open={expandedWorkshops.includes(workshop.id)}
               onOpenChange={() => toggleExpand(workshop.id)}
+              className="w-full"
             >
-              <TableRow>
-                <TableCell className="w-[30%]">
+              <TableRow className="w-full">
+                <TableCell className="w-[20%]">
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
                       <span className="mr-2">{workshop.title}</span>
@@ -138,8 +139,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     </Button>
                   </CollapsibleTrigger>
                 </TableCell>
-                <TableCell className="w-[25%]">{workshop.access_code}</TableCell>
-                <TableCell className="w-[15%]">
+                <TableCell className="w-[20%]">{workshop.access_code}</TableCell>
+                <TableCell className="w-[20%]">
                   <Button
                     variant={workshop.status ? "default" : "secondary"}
                     onClick={() =>
@@ -153,10 +154,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     {workshop.status ? "Active" : "Inactive"}
                   </Button>
                 </TableCell>
-                <TableCell className="w-[15%]">
+                <TableCell className="w-[20%]">
                   {new Date(workshop.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="w-[15%] text-right">
+                <TableCell className="w-[20%] text-right">
                   <Button
                     variant="destructive"
                     onClick={() => {
@@ -174,8 +175,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-              <CollapsibleContent>
-                <div className="px-4 py-4 bg-gray-50">
+              <CollapsibleContent className="w-full">
+                <div className="px-4 py-4 bg-gray-50 w-full">
                   <WorkshopSubmissionsList workshopId={workshop.id} />
                 </div>
               </CollapsibleContent>
