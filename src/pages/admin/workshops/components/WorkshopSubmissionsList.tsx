@@ -37,22 +37,26 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
     );
   }
 
-  if (!submissions?.length) {
+  const submissionsWithImages = submissions?.filter(
+    submission => submission.ai_image_url || submission.url_original_image
+  );
+
+  if (!submissionsWithImages?.length) {
     return (
       <div className="text-center py-8 text-gray-500">
-        No submissions for this workshop yet
+        No submissions with images for this workshop yet
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {submissions.map((submission, index) => (
+      {submissionsWithImages.map((submission, index) => (
         <GeneratedImageCard
           key={submission.id}
           submission={submission}
           index={index}
-          totalSubmissions={submissions.length}
+          totalSubmissions={submissionsWithImages.length}
           onRegenerate={() => {}} // Disabled for admin view
         />
       ))}
