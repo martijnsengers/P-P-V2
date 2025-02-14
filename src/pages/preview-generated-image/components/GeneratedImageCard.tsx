@@ -17,16 +17,19 @@ export const GeneratedImageCard = ({
   totalSubmissions,
   onRegenerate,
 }: GeneratedImageCardProps) => {
+  // If there's no image URL, don't render the card at all
+  if (!submission.ai_image_url || submission.ai_image_url.trim() === '') {
+    return null;
+  }
+
   return (
     <Card className="mb-8">
       <CardContent className="pt-6">
-        {submission.ai_image_url && (
-          <ImageDialog
-            imageUrl={submission.ai_image_url}
-            index={index}
-            totalSubmissions={totalSubmissions}
-          />
-        )}
+        <ImageDialog
+          imageUrl={submission.ai_image_url}
+          index={index}
+          totalSubmissions={totalSubmissions}
+        />
         {submission.latin_name && (
           <h2 className="mt-4 text-lg font-semibold text-gray-900">
             {submission.latin_name}
