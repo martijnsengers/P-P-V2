@@ -209,6 +209,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_admin_by_email: {
+        Args: {
+          email_param: string
+        }
+        Returns: {
+          email: string
+        }[]
+      }
       hash_password: {
         Args: {
           password: string
