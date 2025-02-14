@@ -18,15 +18,15 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // First, verify if the email exists in admins table
+      // First check if the user is an admin
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select('email, password_hash')
+        .select('email')
         .eq('email', email)
         .single();
 
       if (adminError || !adminData) {
-        throw new Error('Invalid credentials');
+        throw new Error('Unauthorized access. Only admins can login here.');
       }
 
       // Then sign in with Supabase Auth
