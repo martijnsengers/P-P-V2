@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,15 +106,15 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
   });
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden w-full">
+    <div className="bg-white rounded-lg shadow overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/5">Title</TableHead>
-            <TableHead className="w-1/5">Access Code</TableHead>
-            <TableHead className="w-1/5">Status</TableHead>
-            <TableHead className="w-1/5">Created At</TableHead>
-            <TableHead className="w-1/5 text-right">Actions</TableHead>
+            <TableHead style={{ width: '20%' }}>Title</TableHead>
+            <TableHead style={{ width: '20%' }}>Access Code</TableHead>
+            <TableHead style={{ width: '20%' }}>Status</TableHead>
+            <TableHead style={{ width: '20%' }}>Created At</TableHead>
+            <TableHead style={{ width: '20%' }} className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -124,10 +123,9 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
               key={workshop.id}
               open={expandedWorkshops.includes(workshop.id)}
               onOpenChange={() => toggleExpand(workshop.id)}
-              className="w-full"
             >
-              <TableRow className="w-full">
-                <TableCell className="w-1/5">
+              <TableRow>
+                <TableCell style={{ width: '20%' }}>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="p-0 hover:bg-transparent w-full justify-start">
                       <span className="mr-2">{workshop.title}</span>
@@ -139,8 +137,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     </Button>
                   </CollapsibleTrigger>
                 </TableCell>
-                <TableCell className="w-1/5">{workshop.access_code}</TableCell>
-                <TableCell className="w-1/5">
+                <TableCell style={{ width: '20%' }}>{workshop.access_code}</TableCell>
+                <TableCell style={{ width: '20%' }}>
                   <Button
                     variant={workshop.status ? "default" : "secondary"}
                     onClick={() =>
@@ -154,10 +152,10 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                     {workshop.status ? "Active" : "Inactive"}
                   </Button>
                 </TableCell>
-                <TableCell className="w-1/5">
+                <TableCell style={{ width: '20%' }}>
                   {new Date(workshop.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="w-1/5 text-right">
+                <TableCell style={{ width: '20%' }} className="text-right">
                   <Button
                     variant="destructive"
                     onClick={() => {
@@ -175,8 +173,8 @@ export function WorkshopsTable({ workshops }: WorkshopsTableProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-              <CollapsibleContent className="w-full">
-                <div className="px-4 py-4 bg-gray-50 w-full">
+              <CollapsibleContent>
+                <div className="px-4 py-4 bg-gray-50">
                   <WorkshopSubmissionsList workshopId={workshop.id} />
                 </div>
               </CollapsibleContent>
