@@ -209,6 +209,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_admin: {
+        Args: {
+          admin_email: string
+          creator_email: string
+        }
+        Returns: boolean
+      }
+      create_first_admin: {
+        Args: {
+          admin_email: string
+        }
+        Returns: boolean
+      }
       get_admin_by_email: {
         Args: {
           email_param: string

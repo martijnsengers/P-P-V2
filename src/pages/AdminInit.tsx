@@ -21,12 +21,19 @@ export default function AdminInit() {
       if (session?.user) {
         const { data: isAdmin } = await supabase.rpc('is_admin_user');
         if (!isAdmin) {
-          toast({
-            title: "Unauthorized",
-            description: "You must be an admin to create new admin users.",
-            variant: "destructive",
-          });
-          navigate('/admin/login');
+          // For first admin creation, we don't redirect non-admins
+          const { count } = await supabase
+            .from('admins')
+            .select('*', { count: 'exact', head: true });
+          
+          if (count && count > 0) {
+            toast({
+              title: "Unauthorized",
+              description: "You must be an admin to create new admin users.",
+              variant: "destructive",
+            });
+            navigate('/admin/login');
+          }
         }
         setCurrentUser(session.user.email || null);
       }
@@ -39,11 +46,7 @@ export default function AdminInit() {
     setLoading(true);
 
     try {
-      if (!currentUser) {
-        throw new Error("You must be logged in as an admin to create new admin users");
-      }
-
-      // Create the new auth user
+      // First create the auth user
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email: newAdminEmail,
         password: newAdminPassword,
@@ -52,12 +55,32 @@ export default function AdminInit() {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("Failed to create user");
 
-      // Insert the admin record
-      const { error: adminInsertError } = await supabase
+      // Check if this is the first admin
+      const { count } = await supabase
         .from('admins')
-        .insert([{ email: newAdminEmail }]);
+        .select('*', { count: 'exact', head: true });
 
-      if (adminInsertError) throw adminInsertError;
+      let success;
+      if (!count || count === 0) {
+        // Create first admin using the security definer function
+        const { data: created } = await supabase
+          .rpc('create_first_admin', {
+            admin_email: newAdminEmail
+          });
+        success = created;
+      } else {
+        // Create subsequent admin using the other function
+        const { data: created } = await supabase
+          .rpc('create_admin', {
+            admin_email: newAdminEmail,
+            creator_email: currentUser
+          });
+        success = created;
+      }
+
+      if (!success) {
+        throw new Error("Failed to create admin record");
+      }
 
       toast({
         title: "Success",
@@ -91,7 +114,7 @@ export default function AdminInit() {
             </p>
           ) : (
             <p className="mt-2 text-center text-sm text-gray-600">
-              Please <a href="/admin/login" className="text-blue-600 hover:text-blue-500">log in</a> as an admin first
+              Please <a href="/admin/login" className="text-blue-600 hover:text-blue-500">log in</a> first
             </p>
           )}
         </div>
@@ -109,7 +132,6 @@ export default function AdminInit() {
                 placeholder="New admin email address"
                 value={newAdminEmail}
                 onChange={(e) => setNewAdminEmail(e.target.value)}
-                disabled={!currentUser}
               />
             </div>
             <div>
@@ -124,7 +146,6 @@ export default function AdminInit() {
                 value={newAdminPassword}
                 onChange={(e) => setNewAdminPassword(e.target.value)}
                 minLength={6}
-                disabled={!currentUser}
               />
             </div>
           </div>
@@ -133,7 +154,7 @@ export default function AdminInit() {
             <Button
               type="submit"
               className="w-full"
-              disabled={loading || !currentUser}
+              disabled={loading}
             >
               {loading ? "Creating..." : "Create New Admin"}
             </Button>
