@@ -34,7 +34,7 @@ export default function AdminLogin() {
 
       // Then check if the user is an admin using our security definer function
       const { data: isAdmin, error: adminCheckError } = await supabase
-        .rpc('check_admin_access');
+        .rpc('is_admin_user');
 
       if (adminCheckError) {
         // If admin check fails, sign out and throw error
