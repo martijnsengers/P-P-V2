@@ -24,13 +24,11 @@ export default function AdminDashboard() {
         return;
       }
 
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select()
-        .eq('email', user.email)
-        .single();
+      // Use the RPC function instead of direct table query
+      const { data: isAdmin, error: adminError } = await supabase
+        .rpc('check_admin_access');
 
-      if (adminError || !adminData) {
+      if (adminError || !isAdmin) {
         throw new Error('Unauthorized access');
       }
 
