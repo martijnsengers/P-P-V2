@@ -24,7 +24,7 @@ export const GeneratedImageCard = ({
 
   return (
     <Card className="mb-8">
-      <CardContent className="pt-6">
+      <CardContent className="pt-4">
         <ImageDialog
           imageUrl={submission.ai_image_url}
           index={index}
