@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,46 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminInit() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check current auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: isAdmin } = await supabase.rpc('is_admin_user');
+        if (!isAdmin) {
+          toast({
+            title: "Unauthorized",
+            description: "You must be an admin to create new admin users.",
+            variant: "destructive",
+          });
+          navigate('/admin/login');
+        }
+        setCurrentUser(session.user.email || null);
+      }
+    };
+    checkAuth();
+  }, [navigate, toast]);
 
   const handleSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // First check if any admin exists
-      const { data: existingAdmins, error: adminCheckError } = await supabase
-        .from('admins')
-        .select('email');
-
-      if (adminCheckError) throw adminCheckError;
-
-      // If admins already exist, prevent creation
-      if (existingAdmins && existingAdmins.length > 0) {
-        throw new Error("An admin already exists. Please use the login page.");
+      if (!currentUser) {
+        throw new Error("You must be logged in as an admin to create new admin users");
       }
 
-      // Create the auth user
+      // Create the new auth user
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: newAdminEmail,
+        password: newAdminPassword,
       });
 
       if (signUpError) throw signUpError;
@@ -42,23 +55,18 @@ export default function AdminInit() {
       // Insert the admin record
       const { error: adminInsertError } = await supabase
         .from('admins')
-        .insert([{ email: email }]);
+        .insert([{ email: newAdminEmail }]);
 
-      if (adminInsertError) {
-        // If admin creation fails, we should clean up the auth user
-        await supabase.auth.admin.deleteUser(user.id);
-        throw adminInsertError;
-      }
-
-      // Sign out after successful setup
-      await supabase.auth.signOut();
+      if (adminInsertError) throw adminInsertError;
 
       toast({
-        title: "Admin setup complete",
-        description: "You can now log in with your credentials.",
+        title: "Success",
+        description: "New admin user created successfully.",
       });
 
-      navigate('/admin/login');
+      // Clear the form
+      setNewAdminEmail("");
+      setNewAdminPassword("");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -75,31 +83,48 @@ export default function AdminInit() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Initial Admin Setup
+            Create New Admin User
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Set up your admin account password
-          </p>
+          {currentUser ? (
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Logged in as: <span className="font-semibold">{currentUser}</span>
+            </p>
+          ) : (
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Please <a href="/admin/login" className="text-blue-600 hover:text-blue-500">log in</a> as an admin first
+            </p>
+          )}
         </div>
+        
         <form className="mt-8 space-y-6" onSubmit={handleSetup}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
+              <label htmlFor="newAdminEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                New Admin Email
+              </label>
               <Input
+                id="newAdminEmail"
                 type="email"
                 required
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="New admin email address"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                disabled={!currentUser}
               />
             </div>
             <div>
+              <label htmlFor="newAdminPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                New Admin Password
+              </label>
               <Input
+                id="newAdminPassword"
                 type="password"
                 required
-                placeholder="Set your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Set password for new admin"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
                 minLength={6}
+                disabled={!currentUser}
               />
             </div>
           </div>
@@ -108,12 +133,21 @@ export default function AdminInit() {
             <Button
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !currentUser}
             >
-              {loading ? "Setting up..." : "Complete Setup"}
+              {loading ? "Creating..." : "Create New Admin"}
             </Button>
           </div>
         </form>
+
+        <div className="mt-4 text-center">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
     </div>
   );
