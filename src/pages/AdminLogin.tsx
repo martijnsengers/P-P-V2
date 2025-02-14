@@ -18,23 +18,29 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      // Check if the user is an admin
+      // First, verify if the email exists in admins table
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select()
+        .select('email, password_hash')
         .eq('email', email)
         .single();
 
       if (adminError || !adminData) {
-        await supabase.auth.signOut();
-        throw new Error('Unauthorized access. Only admins can login here.');
+        throw new Error('Invalid credentials');
+      }
+
+      // Then sign in with Supabase Auth
+      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (!user) {
+        throw new Error('Authentication failed');
       }
 
       toast({
