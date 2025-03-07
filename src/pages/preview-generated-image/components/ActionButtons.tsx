@@ -72,7 +72,7 @@ AI Description: ${submission.ai_description}
           <Download className="h-5 w-5" />
         </Button>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 ml-auto">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline">
