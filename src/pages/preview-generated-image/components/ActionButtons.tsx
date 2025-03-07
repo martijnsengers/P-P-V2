@@ -63,34 +63,34 @@ AI Description: ${submission.ai_description}
   };
 
   return (
-    <div className="flex justify-between pt-6">
+    <div className="flex justify-between w-full pt-6">
       <div className="flex gap-2">
-        <Button variant="outline" onClick={handleShare} title="Share">
+        <Button variant="outline" onClick={handleShare} title="Share" className="bg-muted">
           <Share2 className="h-5 w-5" />
         </Button>
-        <Button variant="outline" onClick={handleSave} title="Save">
+        <Button variant="outline" onClick={handleSave} title="Save" className="bg-muted">
           <Download className="h-5 w-5" />
         </Button>
       </div>
-      <div className="flex gap-2 ml-auto">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              Details
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Generation Details</SheetTitle>
-            </SheetHeader>
-            <SubmissionDetails submission={submission} />
-          </SheetContent>
-        </Sheet>
-        {index === 0 && totalSubmissions === 1 && onRegenerate && (
-          <Button onClick={onRegenerate}>Opnieuw genereren?</Button>
-        )}
-      </div>
+
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" className="px-6 bg-muted flex-grow-0">
+            Details
+            <ChevronDown className="ml-2 h-4 w-4" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Generation Details</SheetTitle>
+          </SheetHeader>
+          <SubmissionDetails submission={submission} />
+        </SheetContent>
+      </Sheet>
+      
+      {index === 0 && totalSubmissions === 1 && onRegenerate && (
+        <Button onClick={onRegenerate} className="ml-2">Opnieuw genereren?</Button>
+      )}
     </div>
   );
 };

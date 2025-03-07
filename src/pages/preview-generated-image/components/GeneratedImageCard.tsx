@@ -37,7 +37,7 @@ export const GeneratedImageCard = ({
         )}
         <p className="mt-4 text-gray-600">{submission.summary}</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="w-full p-4 pt-0">
         <ActionButtons
           submission={submission}
           onRegenerate={onRegenerate}
