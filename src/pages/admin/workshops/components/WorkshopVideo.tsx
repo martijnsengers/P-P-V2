@@ -107,7 +107,7 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
         controls
         className="w-full aspect-video bg-black"
         src={videoUrl}
-        poster="/placeholder.svg"
+        poster="/lovable-uploads/ef4ffb01-0b02-46a0-8148-cc11dc1f4357.png"
       >
         Your browser does not support the video tag.
       </video>
