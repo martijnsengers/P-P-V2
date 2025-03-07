@@ -15,18 +15,44 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
+        console.log("Fetching video for workshop ID:", workshopId);
+        
+        // Check if the file exists first
+        const { data: fileData, error: fileError } = await supabase
+          .storage
+          .from('generated-video-final')
+          .list('', {
+            search: `${workshopId}.mp4`
+          });
+          
+        if (fileError) {
+          console.error("Error checking for video file:", fileError);
+          setError("Could not verify workshop video exists");
+          setLoading(false);
+          return;
+        }
+        
+        if (!fileData || fileData.length === 0) {
+          console.log("No video file found for workshop:", workshopId);
+          setError("No video found for this workshop");
+          setLoading(false);
+          return;
+        }
+        
+        // File exists, get signed URL
         const { data, error } = await supabase
           .storage
           .from('generated-video-final')
           .createSignedUrl(`${workshopId}.mp4`, 3600); // 1 hour expiry
 
         if (error) {
-          console.error("Error fetching video:", error);
+          console.error("Error creating signed URL:", error);
           setError("Could not load workshop video");
           setLoading(false);
           return;
         }
 
+        console.log("Successfully fetched video signed URL");
         setVideoUrl(data.signedUrl);
         setLoading(false);
       } catch (err) {
