@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { GeneratedImageCard } from "@/pages/preview-generated-image/components/GeneratedImageCard";
 import { Submission } from "@/pages/preview-generated-image/types";
 import { WorkshopVideo } from "./WorkshopVideo";
+import { useEffect } from "react";
 
 interface WorkshopSubmissionsListProps {
   workshopId: string;
 }
 
 export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListProps) {
-  const { data: submissions, isLoading } = useQuery({
+  const { data: submissions, isLoading, refetch } = useQuery({
     queryKey: ["workshop-submissions", workshopId],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -29,6 +30,30 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
     },
     refetchInterval: 60000, // Polling every minute
   });
+
+  // Subscribe to submissions table changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('submissions-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'submissions',
+          filter: `workshop_id=eq.${workshopId}`,
+        },
+        (payload) => {
+          console.log("New submission detected:", payload);
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [workshopId, refetch]);
 
   if (isLoading) {
     return (

@@ -44,6 +44,29 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
     if (workshopId) {
       fetchVideo();
     }
+
+    // Subscribe to workshop_video_url updates
+    const channel = supabase
+      .channel('workshop-video-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'workshops',
+          filter: `id=eq.${workshopId}`,
+        },
+        (payload) => {
+          console.log("Workshop update detected:", payload);
+          // If workshop is updated, refetch the video
+          fetchVideo();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [workshopId]);
 
   const handleFullscreen = (videoElement: HTMLVideoElement) => {
