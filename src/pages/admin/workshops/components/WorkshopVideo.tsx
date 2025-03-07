@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, Play } from "lucide-react";
 
 interface WorkshopVideoProps {
   workshopId: string;
@@ -12,6 +12,7 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -81,6 +82,13 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
     }
   };
 
+  const handlePlayClick = (videoRef: HTMLVideoElement) => {
+    if (videoRef) {
+      videoRef.play();
+      setIsPlaying(true);
+    }
+  };
+
   if (loading) {
     return <Skeleton className="w-full aspect-video rounded-md" />;
   }
@@ -103,17 +111,36 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
 
   return (
     <div className="mt-4 overflow-hidden rounded-md relative group">
+      {!isPlaying && (
+        <div 
+          className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10 cursor-pointer"
+          onClick={(e) => {
+            const videoElement = document.getElementById('workshop-video') as HTMLVideoElement;
+            if (videoElement) {
+              handlePlayClick(videoElement);
+            }
+          }}
+        >
+          <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
+            <Play className="h-8 w-8 text-white" fill="white" />
+          </div>
+        </div>
+      )}
       <video 
+        id="workshop-video"
         controls
         className="w-full aspect-video bg-black"
         src={videoUrl}
-        poster="/lovable-uploads/ef4ffb01-0b02-46a0-8148-cc11dc1f4357.png"
+        poster="/lovable-uploads/5a2561cf-ff32-4d6a-8ba2-07b935f4ecc6.png"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
       >
         Your browser does not support the video tag.
       </video>
       <button 
         onClick={(e) => {
-          const videoElement = e.currentTarget.previousSibling as HTMLVideoElement;
+          const videoElement = document.getElementById('workshop-video') as HTMLVideoElement;
           handleFullscreen(videoElement);
         }}
         className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
