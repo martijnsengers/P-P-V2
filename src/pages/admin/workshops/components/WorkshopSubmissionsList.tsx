@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneratedImageCard } from "@/pages/preview-generated-image/components/GeneratedImageCard";
 import { Submission } from "@/pages/preview-generated-image/types";
+import { WorkshopVideo } from "./WorkshopVideo";
 
 interface WorkshopSubmissionsListProps {
   workshopId: string;
@@ -44,25 +45,35 @@ export function WorkshopSubmissionsList({ workshopId }: WorkshopSubmissionsListP
       (submission.url_original_image && submission.url_original_image.trim() !== '')
   );
 
-  if (!submissionsWithImages?.length) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        No submissions with images for this workshop yet
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {submissionsWithImages.map((submission, index) => (
-        <GeneratedImageCard
-          key={submission.id}
-          submission={submission}
-          index={index}
-          totalSubmissions={submissionsWithImages.length}
-          onRegenerate={() => {}} // Disabled for admin view
-        />
-      ))}
+    <div className="space-y-8">
+      {/* Workshop Final Video Section */}
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold mb-4">Workshop Final Video</h3>
+        <WorkshopVideo workshopId={workshopId} />
+      </div>
+      
+      {/* Submissions Section */}
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Individual Submissions</h3>
+        {!submissionsWithImages?.length ? (
+          <div className="text-center py-8 text-gray-500">
+            No submissions with images for this workshop yet
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {submissionsWithImages.map((submission, index) => (
+              <GeneratedImageCard
+                key={submission.id}
+                submission={submission}
+                index={index}
+                totalSubmissions={submissionsWithImages.length}
+                onRegenerate={() => {}} // Disabled for admin view
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

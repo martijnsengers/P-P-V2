@@ -30,47 +30,6 @@ export type Database = {
         }
         Relationships: []
       }
-      gallery_items: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          generated_image_url: string | null
-          id: string
-          image_url: string
-          title: string
-          workshop_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          generated_image_url?: string | null
-          id?: string
-          image_url: string
-          title: string
-          workshop_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          generated_image_url?: string | null
-          id?: string
-          image_url?: string
-          title?: string
-          workshop_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "gallery_items_workshop_id_fkey"
-            columns: ["workshop_id"]
-            isOneToOne: false
-            referencedRelation: "workshops"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       submissions: {
         Row: {
           adjust_organisme: boolean | null
@@ -163,30 +122,126 @@ export type Database = {
           },
         ]
       }
+      video_submissions: {
+        Row: {
+          ai_generated_image_url: string | null
+          ai_video_url: string | null
+          cloudinary_id: string | null
+          cloudinary_url: string | null
+          created_at: string
+          id: string
+          latin_name: string | null
+          organism_type: string | null
+          replicate_prediction_id: string | null
+          replicate_status: string | null
+          user_id: string | null
+          video_status: string | null
+          workshop_id: string | null
+        }
+        Insert: {
+          ai_generated_image_url?: string | null
+          ai_video_url?: string | null
+          cloudinary_id?: string | null
+          cloudinary_url?: string | null
+          created_at?: string
+          id?: string
+          latin_name?: string | null
+          organism_type?: string | null
+          replicate_prediction_id?: string | null
+          replicate_status?: string | null
+          user_id?: string | null
+          video_status?: string | null
+          workshop_id?: string | null
+        }
+        Update: {
+          ai_generated_image_url?: string | null
+          ai_video_url?: string | null
+          cloudinary_id?: string | null
+          cloudinary_url?: string | null
+          created_at?: string
+          id?: string
+          latin_name?: string | null
+          organism_type?: string | null
+          replicate_prediction_id?: string | null
+          replicate_status?: string | null
+          user_id?: string | null
+          video_status?: string | null
+          workshop_id?: string | null
+        }
+        Relationships: []
+      }
+      workshop_videos_metadata: {
+        Row: {
+          cloudinary_public_id: string | null
+          created_at: string
+          id: number
+          status: string | null
+          video_type: string | null
+        }
+        Insert: {
+          cloudinary_public_id?: string | null
+          created_at?: string
+          id?: number
+          status?: string | null
+          video_type?: string | null
+        }
+        Update: {
+          cloudinary_public_id?: string | null
+          created_at?: string
+          id?: number
+          status?: string | null
+          video_type?: string | null
+        }
+        Relationships: []
+      }
       workshops: {
         Row: {
           access_code: string
+          completed_video_count: number | null
           created_at: string
+          expected_video_count: number | null
+          failed_video_count: number | null
           id: string
+          minimum_videos_required: number | null
+          outtro_video_ready: boolean | null
+          processed_for_video: boolean | null
           status: boolean | null
           title: string
           updated_at: string
+          video_generation_timeout: string | null
+          workshop_video_url: string | null
         }
         Insert: {
           access_code: string
+          completed_video_count?: number | null
           created_at?: string
+          expected_video_count?: number | null
+          failed_video_count?: number | null
           id?: string
+          minimum_videos_required?: number | null
+          outtro_video_ready?: boolean | null
+          processed_for_video?: boolean | null
           status?: boolean | null
           title: string
           updated_at?: string
+          video_generation_timeout?: string | null
+          workshop_video_url?: string | null
         }
         Update: {
           access_code?: string
+          completed_video_count?: number | null
           created_at?: string
+          expected_video_count?: number | null
+          failed_video_count?: number | null
           id?: string
+          minimum_videos_required?: number | null
+          outtro_video_ready?: boolean | null
+          processed_for_video?: boolean | null
           status?: boolean | null
           title?: string
           updated_at?: string
+          video_generation_timeout?: string | null
+          workshop_video_url?: string | null
         }
         Relationships: []
       }

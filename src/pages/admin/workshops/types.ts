@@ -5,4 +5,5 @@ export interface Workshop {
   access_code: string;
   status: boolean;
   created_at: string;
+  workshop_video_url?: string | null;
 }
