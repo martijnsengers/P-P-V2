@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { GalleryItem } from "../types";
+import type { Submission } from "@/pages/preview-generated-image/types";
 import type { Workshop } from "../../workshops/types";
 import {
   Select,
@@ -29,15 +29,15 @@ export function GalleryGrid() {
     },
   });
 
-  // Fetch gallery items with workshop filter
+  // Fetch submissions with workshop filter
   const { data: items, isLoading } = useQuery({
-    queryKey: ["gallery-items", selectedWorkshop],
+    queryKey: ["gallery-submissions", selectedWorkshop],
     queryFn: async () => {
       let query = supabase
-        .from("gallery_items")
+        .from("submissions")
         .select(`
           *,
-          workshops (
+          workshops:workshop_id (
             title
           )
         `)
@@ -49,7 +49,7 @@ export function GalleryGrid() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as (Submission & { workshops: { title: string } | null })[];
     },
   });
 
@@ -57,7 +57,12 @@ export function GalleryGrid() {
     return <div>Loading...</div>;
   }
 
-  if (!items?.length) {
+  // Filter submissions to only show ones with generated images
+  const submissionsWithImages = items?.filter(
+    item => item.ai_image_url && item.ai_image_url.trim() !== ''
+  );
+
+  if (!submissionsWithImages?.length) {
     return (
       <div className="text-center py-12 text-gray-500">
         No generated images available
@@ -87,11 +92,11 @@ export function GalleryGrid() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item) => (
+        {submissionsWithImages.map((item) => (
           <div key={item.id} className="bg-white rounded-lg shadow overflow-hidden">
-            {item.generated_image_url ? (
+            {item.ai_image_url ? (
               <img
-                src={item.generated_image_url}
+                src={item.ai_image_url}
                 alt="Generated image"
                 className="w-full h-48 object-cover"
               />
@@ -104,8 +109,11 @@ export function GalleryGrid() {
               <p className="text-sm text-gray-500">
                 Workshop: {item.workshops?.title || "Unknown"}
               </p>
-              {item.description && (
-                <p className="text-gray-600 mt-1">{item.description}</p>
+              {item.summary && (
+                <p className="text-gray-600 mt-1">{item.summary}</p>
+              )}
+              {!item.summary && item.latin_name && (
+                <p className="text-gray-600 mt-1">{item.latin_name}</p>
               )}
               <p className="text-sm text-gray-500 mt-2">
                 {new Date(item.created_at).toLocaleDateString()}
