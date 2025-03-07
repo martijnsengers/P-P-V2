@@ -15,7 +15,6 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        // Try to get the video from storage
         const { data, error } = await supabase
           .storage
           .from('generated-video-final')
@@ -23,20 +22,16 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
 
         if (error) {
           console.error("Error fetching video:", error);
-          setError("Video not available yet");
+          setError("Could not load workshop video");
           setLoading(false);
           return;
         }
 
-        if (data?.signedUrl) {
-          setVideoUrl(data.signedUrl);
-        } else {
-          setError("Video not available yet");
-        }
+        setVideoUrl(data.signedUrl);
+        setLoading(false);
       } catch (err) {
         console.error("Error in video fetch:", err);
         setError("Error loading workshop video");
-      } finally {
         setLoading(false);
       }
     };
