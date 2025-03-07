@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Maximize2 } from "lucide-react";
 
 interface WorkshopVideoProps {
   workshopId: string;
@@ -45,13 +46,25 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
     }
   }, [workshopId]);
 
+  const handleFullscreen = (videoElement: HTMLVideoElement) => {
+    if (videoElement) {
+      if (videoElement.requestFullscreen) {
+        videoElement.requestFullscreen();
+      } else if ((videoElement as any).webkitRequestFullscreen) {
+        (videoElement as any).webkitRequestFullscreen();
+      } else if ((videoElement as any).msRequestFullscreen) {
+        (videoElement as any).msRequestFullscreen();
+      }
+    }
+  };
+
   if (loading) {
-    return <Skeleton className="w-full h-64 rounded-md" />;
+    return <Skeleton className="w-full aspect-video rounded-md" />;
   }
 
   if (error) {
     return (
-      <div className="bg-gray-100 rounded-md p-4 text-center text-gray-500">
+      <div className="bg-gray-100 rounded-md p-4 text-center text-gray-500 aspect-video flex items-center justify-center">
         {error}
       </div>
     );
@@ -59,22 +72,32 @@ export function WorkshopVideo({ workshopId }: WorkshopVideoProps) {
 
   if (!videoUrl) {
     return (
-      <div className="bg-gray-100 rounded-md p-4 text-center text-gray-500">
+      <div className="bg-gray-100 rounded-md p-4 text-center text-gray-500 aspect-video flex items-center justify-center">
         No final video available for this workshop yet
       </div>
     );
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-md bg-black">
+    <div className="mt-4 overflow-hidden rounded-md relative group">
       <video 
         controls
-        className="w-full h-auto"
+        className="w-full aspect-video bg-black"
         src={videoUrl}
         poster="/placeholder.svg"
       >
         Your browser does not support the video tag.
       </video>
+      <button 
+        onClick={(e) => {
+          const videoElement = e.currentTarget.previousSibling as HTMLVideoElement;
+          handleFullscreen(videoElement);
+        }}
+        className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Fullscreen"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
     </div>
   );
 }
